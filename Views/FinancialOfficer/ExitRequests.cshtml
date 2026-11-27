@@ -1,0 +1,24 @@
+@using UFSWebApp.Models
+@model List<ResidenceExitRequest>
+@{ ViewData["Title"] = "Residence exit requests"; string current = ViewBag.Status; }
+<h2 class="mb-3">Residence exit requests</h2>
+<div class="btn-group mb-3">@foreach (var status in new[] { "Pending", "Approved", "Rejected", "All" }) { <a asp-action="ExitRequests" asp-route-status="@status" class="btn btn-sm @(current == status ? "btn-primary" : "btn-outline-primary")">@status</a> }</div>
+@if (!Model.Any()) { <div class="empty-state p-5 text-center">No exit requests in this view.</div> }
+@foreach (var request in Model)
+{
+    <div class="card dashboard-card p-3 mb-3">
+        <div class="d-flex justify-content-between flex-wrap"><div><strong>@request.user.FullName</strong> <span class="small text-secondary">(@request.user.UserEmail · @request.user.PhoneNumber)</span></div>
+            <span class="badge @(request.Status == ResidenceExitRequestStatuses.Approved ? "badge-soft-success" : request.Status == ResidenceExitRequestStatuses.Rejected ? "badge-soft-danger" : "badge-soft-warning")">@request.Status</span></div>
+        <div class="small mt-2">@request.RoomAllocation.Room.Accommodation.AccommodationName · Room @request.RoomAllocation.Room.RoomNumber (@request.RoomAllocation.Room.RoomType) · submitted @request.DateSubmitted.ToLocalTime().ToString("d MMM yyyy")</div>
+        <p class="mt-2 mb-1"><strong>Reason:</strong> @request.Reason</p>
+        @if (request.Status == ResidenceExitRequestStatuses.Pending)
+        {
+            <form asp-action="DecideExitRequest" asp-route-id="@request.ResidenceExitRequestId" method="post" class="row g-2 mt-2 align-items-end">
+                <div class="col-md-7"><label class="form-label small mb-0">Decision note (required when rejecting)</label><input name="note" class="form-control form-control-sm" maxlength="300" /></div>
+                <div class="col-md-5 d-flex gap-2"><button name="decision" value="approve" class="btn btn-sm btn-success" type="submit">Approve and release room</button>
+                    <button name="decision" value="reject" class="btn btn-sm btn-danger" type="submit" onclick="return this.form.note.value.trim().length > 0 || (alert('Enter a reason before rejecting.'), false);">Reject</button></div>
+            </form>
+        }
+        else { <div class="small mt-2 text-secondary">Decided by @request.DecidedBy on @request.DateDecided?.ToLocalTime().ToString("d MMM yyyy")@(string.IsNullOrWhiteSpace(request.DecisionNote) ? "" : " · " + request.DecisionNote)</div> }
+    </div>
+}

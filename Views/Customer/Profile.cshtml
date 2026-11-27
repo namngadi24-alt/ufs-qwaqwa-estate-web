@@ -1,0 +1,32 @@
+@model EditUserViewModel
+@{ ViewData["Title"] = "My profile"; bool suspended = ViewBag.IsSuspended; }
+<h2 class="mb-3">My profile</h2>
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card dashboard-card p-4">
+        @if (suspended) { <div class="alert alert-warning">Your account is suspended, so your profile cannot be edited.</div> }
+        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+        <form asp-action="Profile" method="post" novalidate>
+            <input type="hidden" asp-for="UserId" />
+            <div class="mb-3"><label asp-for="UserName" class="form-label fw-semibold"></label><input asp-for="UserName" class="form-control" maxlength="50" required disabled="@suspended" /></div>
+            <div class="mb-3"><label asp-for="UserSurname" class="form-label fw-semibold"></label><input asp-for="UserSurname" class="form-control" maxlength="50" required disabled="@suspended" /></div>
+            <div class="mb-3"><label asp-for="IdentificationNumber" class="form-label fw-semibold"></label><input asp-for="IdentificationNumber" class="form-control" readonly /></div>
+            <div class="mb-3"><label asp-for="UserEmail" class="form-label fw-semibold"></label><input asp-for="UserEmail" class="form-control" readonly /></div>
+            <div class="mb-3"><label asp-for="PhoneNumber" class="form-label fw-semibold"></label><input asp-for="PhoneNumber" class="form-control" type="tel" pattern="(\+27|0)[0-9]{9}" required disabled="@suspended" /></div>
+            @if (!suspended) { <button class="btn btn-primary" type="submit">Save changes</button> }
+            <a asp-action="Index" class="btn btn-link">Back</a>
+        </form>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card dashboard-card p-4">
+        <h5>Account information</h5>
+        <p class="small mb-1">Account number: <strong>@ViewBag.AccountNumber</strong></p>
+        <p class="small">Registered as: <strong>@ViewBag.PersonType</strong></p>
+        <h6>Allocated rooms</h6>
+        @foreach (RoomAllocation a in ViewBag.Rooms) { <div class="small">@a.Room.Accommodation.AccommodationName - Room @a.Room.RoomNumber (@a.Room.RoomType)</div> }
+        @if (((IEnumerable<RoomAllocation>)ViewBag.Rooms).Count() == 0) { <div class="small text-secondary">None yet.</div> }
+        <p class="small text-secondary mt-3 mb-0">Your student/staff number and email cannot be changed here. Contact a financial officer if they are wrong.</p>
+    </div>
+  </div>
+</div>

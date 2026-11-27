@@ -1,0 +1,42 @@
+@model Payment
+@{ ViewData["Title"] = "Payment receipt"; var ok = Model.PaymentStatus == PaymentStatuses.Successful; var pending = Model.PaymentStatus == PaymentStatuses.Pending; string? token = ViewBag.Token as string; }
+<div class="row justify-content-center"><div class="col-lg-8">
+<div class="card dashboard-card p-4">
+    <div class="d-flex justify-content-between align-items-start">
+        <div><h3 class="mb-0">@(ok ? "Payment receipt" : pending ? "Payment pending" : "Payment unsuccessful")</h3><div class="text-secondary small">@Model.DateOfPay.ToLocalTime().ToString("d MMMM yyyy HH:mm")</div></div>
+        <span class="badge fs-6 @(ok ? "badge-soft-success" : pending ? "badge-soft-warning" : "badge-soft-danger")">@Model.PaymentStatus</span>
+    </div>
+    <hr />
+    <div class="row g-3 small">
+        <div class="col-md-6"><div class="text-secondary">Customer</div><strong>@Model.account.user.FullName</strong> (@Model.account.user.IdentificationNumber)<br />Account @Model.account.AccountNumber</div>
+        <div class="col-md-6"><div class="text-secondary">Reference</div>Receipt: <strong>@(Model.ReceiptNumber ?? "issued when accepted")</strong><br />Provider transaction: @Model.GatewayTransactionReference</div>
+        <div class="col-md-6"><div class="text-secondary">Paid with</div>@Model.CardBrand card ending <strong>@Model.CardLast4</strong> (exp. @Model.CardExpiry)<br />@Model.CardHolder</div>
+        <div class="col-md-6"><div class="text-secondary">Purpose</div>@Model.PaymentPurpose</div>
+    </div>
+    @if (pending)
+    {
+        <div class="alert alert-warning mt-3 mb-0"><i class="fa-solid fa-hourglass-half me-1"></i>This payment is <strong>pending</strong>. It becomes <strong>successful</strong> once a Financial Officer or the Agent Head accepts it, and your balances are updated then.</div>
+        @if (!User.IsInRole("Customer"))
+        {
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <form asp-action="Accept" asp-route-id="@Model.PaymentId" asp-route-returnTo="receipt" method="post"><button class="btn btn-success"><i class="fa-solid fa-check"></i> Accept payment</button></form>
+                <form asp-action="Reject" asp-route-id="@Model.PaymentId" asp-route-returnTo="receipt" method="post" class="d-flex gap-2"><input name="note" class="form-control" placeholder="Reason for rejecting" maxlength="300" required minlength="5" /><button class="btn btn-danger"><i class="fa-solid fa-xmark"></i> Reject</button></form>
+            </div>
+        }
+    }
+    else if (!ok) { <div class="alert alert-danger mt-3 mb-0">@Model.FailureReason @(Model.PaymentPurpose == PaymentPurposes.Bills && Model.FailureReason?.StartsWith("Rejected") == true ? "" : "No money was taken.")</div> }
+    @if (!string.IsNullOrEmpty(token))
+    {
+        <div class="mt-4"><div class="small text-secondary mb-1">Your Metro Token (20 digits) - enter it on your meter</div><div class="token-box">@MetroToken.Format(token)</div></div>
+    }
+    @if (Model.Allocations.Any())
+    {
+        <h6 class="mt-4">How this payment was allocated</h6>
+        <table class="table table-sm"><thead><tr><th>Charge</th><th>Billing period</th><th class="text-end">Allocated</th></tr></thead><tbody>
+        @foreach (var a in Model.Allocations) { <tr><td>@a.Charge.Description</td><td>@a.Charge.BillingPeriod.ToString("MMM yyyy")</td><td class="text-end">&#82;@a.Amount.ToString("N2")</td></tr> }
+        </tbody></table>
+    }
+    <div class="d-flex justify-content-between border-top pt-3"><span class="fs-5">Total</span><span class="fs-4 fw-bold">&#82;@Model.Amount.ToString("N2")</span></div>
+    <div class="mt-3 d-flex gap-2"><button class="btn btn-outline-secondary" onclick="window.print()"><i class="fa-solid fa-print me-1"></i>Print</button>
+        <a asp-action="History" class="btn btn-primary">Payment history</a></div>
+</div></div></div>

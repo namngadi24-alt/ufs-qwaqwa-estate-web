@@ -1,0 +1,14 @@
+@model List<UFSWebApp.Models.Notification>
+@foreach (var n in Model)
+{
+    var level = n.Level switch { "success" => "success", "danger" => "danger", "warning" => "warning", _ => "primary" };
+    var icon = n.Level switch { "success" => "fa-circle-check", "danger" => "fa-circle-exclamation", "warning" => "fa-triangle-exclamation", _ => "fa-bell" };
+    var persist = n.Level is "warning" or "danger";
+    <div class="toast align-items-center border-0 text-bg-@level" role="alert" aria-live="assertive" aria-atomic="true"
+         data-bs-autohide="@(persist ? "false" : "true")" data-bs-delay="9000">
+        <div class="d-flex">
+            <div class="toast-body"><i class="fa-solid @icon me-2"></i>@n.Message</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+}

@@ -1,0 +1,12 @@
+@model DashboardStats
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3"><div class="card stat-tile shadow-sm p-3"><div class="lbl">Registered customers</div><div class="num">@Model.TotalCustomers</div><div class="small text-secondary">@Model.StudentCustomers students &middot; @Model.StaffCustomers staff</div></div></div>
+    <div class="col-6 col-md-3"><div class="card stat-tile shadow-sm p-3"><div class="lbl">Applications</div><div class="num">@Model.ApplicationsTotal</div><div class="small text-secondary">@Model.ApplicationsPending pending &middot; @Model.ApplicationsApproved approved &middot; @Model.ApplicationsRejected rejected</div></div></div>
+    <div class="col-6 col-md-3"><div class="card stat-tile shadow-sm p-3"><div class="lbl">Rooms</div><div class="num">@Model.RoomsOccupied / @Model.RoomsTotal</div><div class="small text-secondary">occupied &middot; @Model.RoomsAvailable available @(Model.RoomsUnderMaintenance > 0 ? "· " + Model.RoomsUnderMaintenance + " in maintenance" : "")</div></div></div>
+    <div class="col-6 col-md-3"><div class="card stat-tile shadow-sm p-3"><div class="lbl">Payments received</div><div class="num">&#82;@Model.TotalReceived.ToString("N2")</div><div class="small text-secondary">@Model.PaymentsSuccessful successful &middot; @Model.PaymentsPending pending &middot; @Model.PaymentsFailed failed</div></div></div>
+    <div class="col-6 col-md-3"><div class="card stat-tile shadow-sm p-3"><div class="lbl">Outstanding balances</div><div class="num">&#82;@Model.Outstanding.ToString("N2")</div></div></div>
+    <div class="col-6 col-md-3"><div class="card stat-tile shadow-sm p-3"><div class="lbl">Water recorded</div><div class="num">@Model.WaterKl.ToString("N2") kl</div></div></div>
+    <div class="col-6 col-md-3"><div class="card stat-tile shadow-sm p-3"><div class="lbl">Electricity (units)</div><div class="num">@Model.ElectricityConsumed.ToString("N2")</div><div class="small text-secondary">consumed &middot; @Model.ElectricityPurchased.ToString("N2") purchased</div></div></div>
+    <div class="col-6 col-md-3"><div class="card stat-tile shadow-sm p-3"><div class="lbl">Maintenance requests</div>
+        <div class="small mt-1">@foreach (var kv in Model.MaintenanceByStatus) { <div class="d-flex justify-content-between"><span>@kv.Key</span><strong>@kv.Value</strong></div> }</div></div></div>
+</div>

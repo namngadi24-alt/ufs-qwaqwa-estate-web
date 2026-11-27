@@ -1,0 +1,31 @@
+@model Accommodation
+@{ ViewData["Title"] = Model.AccommodationName; var rooms = (List<RoomInfo>)ViewBag.Rooms; }
+<nav><ol class="breadcrumb"><li class="breadcrumb-item"><a asp-action="Index">Accommodation</a></li><li class="breadcrumb-item active">@Model.AccommodationName</li></ol></nav>
+<div class="d-flex justify-content-between"><h2>@Model.AccommodationName</h2><a asp-action="Edit" asp-route-id="@Model.AccommodationId" class="btn btn-outline-secondary align-self-start">Edit details</a></div>
+<div class="row g-4">
+  <div class="col-lg-8"><div class="card dashboard-card p-3"><h5>Rooms</h5>
+    <div class="table-responsive"><table class="table align-middle table-sm"><thead><tr><th>Room</th><th>Type</th><th>Occupancy</th><th>Rent</th><th>Status</th><th></th></tr></thead><tbody>
+    @foreach (var r in rooms)
+    {
+        <tr><td><strong>@r.Room.RoomNumber</strong></td><td class="small">@r.Room.RoomType</td><td>@r.Occupants / @r.Room.Capacity</td><td>@(r.Rent == null ? "-" : "R" + r.Rent.Value.ToString("N2"))</td>
+            <td><span class="badge @(r.IsAvailable ? "badge-soft-success" : r.Room.IsUnderMaintenance ? "badge-soft-warning" : "badge-soft-danger")">@r.Status</span></td>
+            <td class="text-end text-nowrap"><form asp-action="ToggleRoomMaintenance" asp-route-roomId="@r.Room.RoomId" method="post" class="d-inline"><button class="btn btn-sm btn-outline-warning">@(r.Room.IsUnderMaintenance ? "Make available" : "Mark under maintenance")</button></form>
+                <form asp-action="DeleteRoom" asp-route-roomId="@r.Room.RoomId" method="post" class="d-inline" onsubmit="return confirm('Delete this room?');"><button class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i> Delete</button></form></td></tr>
+    }</tbody></table></div>
+    <h6 class="mt-3">Add a room</h6>
+    <form asp-action="AddRoom" method="post" class="row g-2"><input type="hidden" name="accommodationId" value="@Model.AccommodationId" />
+        <div class="col-md-2"><input name="roomNumber" class="form-control" placeholder="No." maxlength="20" required /></div>
+        <div class="col-md-4"><select name="roomType" class="form-select" required>@foreach (var t in RoomTypes.All) { <option value="@t">@t</option> }</select></div>
+        <div class="col-md-2"><input name="capacity" type="number" min="1" max="6" value="1" class="form-control" required /></div>
+        <div class="col-md-4"><input name="facilities" class="form-control" placeholder="Facilities, comma separated" maxlength="300" /></div>
+        <div class="col-12"><button class="btn btn-primary btn-sm">Add room</button></div></form></div></div>
+  <div class="col-lg-4"><div class="card dashboard-card p-3"><h5>Photographs</h5>
+    @foreach (var p in Model.Photos)
+    {
+        <div class="mb-2"><img src="@p.Path" alt="@p.Caption" class="img-fluid rounded" /><div class="d-flex justify-content-between small"><span>@p.Caption</span>
+            <form asp-action="DeletePhoto" asp-route-photoId="@p.AccommodationPhotoId" method="post" onsubmit="return confirm('Remove photo?');"><button class="btn btn-link btn-sm text-danger p-0">remove</button></form></div></div>
+    }
+    <form asp-action="UploadPhoto" method="post" enctype="multipart/form-data" class="mt-2"><input type="hidden" name="accommodationId" value="@Model.AccommodationId" />
+        <input type="file" name="photo" accept=".jpg,.jpeg,.png,.webp" class="form-control form-control-sm mb-2" required /><input name="caption" class="form-control form-control-sm mb-2" placeholder="Caption" maxlength="150" />
+        <button class="btn btn-sm btn-primary"><i class="fa-solid fa-upload"></i> Upload photo</button></form></div></div>
+</div>

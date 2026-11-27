@@ -1,0 +1,46 @@
+@model List<Accommodation>
+@{ ViewData["Title"] = "Home"; }
+<section class="hero rounded-4 p-4 p-lg-5 mb-4">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+            <h1 class="display-6 fw-bold">Student &amp; staff accommodation on the UFS QwaQwa estate</h1>
+            <p class="lead mb-4">Browse flats and townhouses, apply online, pay rent, water and electricity securely, and report maintenance - all in one place.</p>
+            <a asp-controller="Accommodation" asp-action="Index" class="btn btn-primary btn-lg me-2">
+                <i class="fa-solid fa-building"></i> Browse accommodation
+            </a>
+            @if (User.Identity?.IsAuthenticated != true)
+            {
+                <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary btn-lg">
+                    <i class="fa-solid fa-user-plus"></i> Create an account
+                </a>
+            }
+          
+        </div>
+        <div class="col-lg-5 text-center"><img src="~/images/imgufsqq.jpg" alt="UFS QwaQwa campus" class="hero-image img-fluid rounded-4" /></div>
+    </div>
+</section>
+
+<h3 class="mb-3">Featured accommodation</h3>
+<div class="row g-4 mb-5">
+    @foreach (var a in Model)
+    {
+        <div class="col-md-6 col-xl-4">
+            <div class="card accom-card h-100 shadow-sm">
+                <img src="@(a.Photos.FirstOrDefault()?.Path ?? "/images/imgufsqq.jpg")" alt="@a.AccommodationName" />
+                <div class="card-body d-flex flex-column">
+                    <span class="badge badge-soft-secondary align-self-start mb-2">@a.AccommodationType</span>
+                    <h5 class="card-title">@a.AccommodationName</h5>
+                    <p class="text-secondary small flex-grow-1">@a.Description</p>
+                    <a asp-controller="Accommodation" asp-action="Details" asp-route-id="@a.AccommodationId" class="btn btn-primary"><i class="fa-solid fa-door-open"></i> View rooms &amp; prices</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3"><div class="feature-card p-3 h-100"><i class="fa-solid fa-eye fa-lg mb-2 text-danger"></i><h6>Browse freely</h6><p class="small mb-0">See photos, prices and availability without signing in.</p></div></div>
+    <div class="col-md-3"><div class="feature-card p-3 h-100"><i class="fa-solid fa-file-signature fa-lg mb-2 text-danger"></i><h6>Apply online</h6><p class="small mb-0">Register once, reuse your profile in every application.</p></div></div>
+    <div class="col-md-3"><div class="feature-card p-3 h-100"><i class="fa-solid fa-credit-card fa-lg mb-2 text-danger"></i><h6>Pay what you use</h6><p class="small mb-0">Rent, water and electricity are calculated from the current tariffs.</p></div></div>
+    <div class="col-md-3"><div class="feature-card p-3 h-100"><i class="fa-solid fa-screwdriver-wrench fa-lg mb-2 text-danger"></i><h6>Report problems</h6><p class="small mb-0">Residents log maintenance requests and follow their progress.</p></div></div>
+</div>

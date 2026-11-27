@@ -1,0 +1,42 @@
+﻿@model ReportViewModel
+@{ ViewData["Title"] = "Edit Report"; }
+
+<h2 class="mb-4"><i class="fa-solid fa-pen text-danger me-2"></i>Edit Draft Report</h2>
+
+<div class="alert alert-light border">
+    <i class="fa-solid fa-circle-info me-1"></i>
+    The financial snapshot will be refreshed with current system data when you save:
+    <strong>Total Collected: &#82;@(ViewBag.TotalCollected.ToString("N2"))</strong> &middot;
+    <strong>Total Pending: &#82;@(ViewBag.TotalPending.ToString("N2"))</strong> &middot;
+    <strong>Payments Recorded: @ViewBag.PaymentCount</strong>
+</div>
+
+<div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+<form asp-action="Edit" method="post" class="col-md-8">
+    <input type="hidden" asp-for="ReportId" />
+    <div class="mb-3">
+        <label asp-for="ReportTitle" class="form-label"></label>
+        <input asp-for="ReportTitle" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="Findings" class="form-label"><i class="fa-solid fa-magnifying-glass-chart me-1"></i>Findings</label>
+        <textarea asp-for="Findings" class="form-control" rows="4"></textarea>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Advice" class="form-label"><i class="fa-solid fa-lightbulb me-1"></i>Advice</label>
+        <textarea asp-for="Advice" class="form-control" rows="4"></textarea>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Comments" class="form-label"><i class="fa-solid fa-comment me-1"></i>Comments</label>
+        <textarea asp-for="Comments" class="form-control" rows="3"></textarea>
+    </div>
+    <div class="mb-3">
+        <label asp-for="ReportDescription" class="form-label"><i class="fa-solid fa-circle-info me-1"></i>Additional notes / inputs</label>
+        <textarea asp-for="ReportDescription" class="form-control" rows="3"></textarea>
+    </div>
+
+    <button type="submit" name="action" value="draft" class="btn btn-outline-secondary"><i class="fa-solid fa-floppy-disk me-1"></i>Save Draft</button>
+    <button type="submit" name="action" value="submit" class="btn btn-danger"><i class="fa-solid fa-paper-plane me-1"></i>Submit Report</button>
+    <a asp-action="Index" class="btn btn-link">Cancel</a>
+    <div class="form-text mt-2">Submitted reports are final and visible to Admin — they can no longer be edited.</div>
+</form>

@@ -1,0 +1,30 @@
+@model UtilitiesViewModel
+@{ ViewData["Title"] = "Water & electricity"; }
+<h2 class="mb-1">Water and electricity</h2>
+<p class="text-secondary">Water: &#82;@Model.WaterRate.ToString("N2") per kl. Electricity: &#82;@Model.ElectricityRate.ToString("N2") per unit. Customers buy electricity units themselves; recording consumption deducts units from their balance (any shortfall becomes a charge).</p>
+<div class="row g-4 mb-4">
+    <div class="col-lg-6"><div class="card dashboard-card p-3"><h5><i class="fa-solid fa-droplet me-1"></i>Record water usage</h5>
+        <form asp-action="RecordWater" method="post" class="row g-2">
+            <div class="col-12"><label class="form-label small">Customer</label><select name="userId" class="form-select" required><option value="">Select...</option>@foreach (var c in Model.Customers) { <option value="@c.UserId">@c.FullName (@c.IdentificationNumber)</option> }</select></div>
+            <div class="col-6"><label class="form-label small">Billing month</label><input type="month" name="period" class="form-control" value="@DateTime.Today.AddMonths(-1).ToString("yyyy-MM")" max="@DateTime.Today.ToString("yyyy-MM")" required /></div>
+            <div class="col-6"><label class="form-label small">Usage (kl)</label><input type="number" name="usageKl" step="0.01" min="0.01" max="1000" class="form-control" required /></div>
+            <div class="col-12"><button class="btn btn-primary"><i class="fa-solid fa-droplet"></i> Record usage &amp; bill</button></div></form></div></div>
+    <div class="col-lg-6"><div class="card dashboard-card p-3"><h5><i class="fa-solid fa-bolt me-1"></i>Record electricity consumption</h5>
+        <form asp-action="RecordElectricity" method="post" class="row g-2">
+            <div class="col-12"><label class="form-label small">Customer</label><select name="userId" class="form-select" required><option value="">Select...</option>@foreach (var c in Model.Customers) { <option value="@c.UserId">@c.FullName (@c.IdentificationNumber)</option> }</select></div>
+            <div class="col-6"><label class="form-label small">Units consumed</label><input type="number" name="units" step="0.01" min="0.01" max="5000" class="form-control" required /></div>
+            <div class="col-6"><label class="form-label small">Note</label><input name="note" class="form-control" maxlength="150" /></div>
+            <div class="col-12"><button class="btn btn-primary"><i class="fa-solid fa-bolt"></i> Record usage</button></div></form></div></div>
+</div>
+<div class="card dashboard-card p-3 mb-4"><h5>Import readings</h5>
+    <form asp-action="ImportReadings" method="post" class="row g-2">
+        <div class="col-md-3"><label class="form-label small">Type</label><select name="kind" class="form-select"><option value="water">Water (kl)</option><option value="electricity">Electricity (units)</option></select></div>
+        <div class="col-md-3"><label class="form-label small">Billing month (water)</label><input type="month" name="period" class="form-control" value="@DateTime.Today.AddMonths(-1).ToString("yyyy-MM")" /></div>
+        <div class="col-md-6"><label class="form-label small">One line per customer: <code>studentOrStaffNumber,value</code></label><textarea name="data" class="form-control" rows="3" placeholder="2024123456,4.5"></textarea></div>
+        <div class="col-12"><button class="btn btn-outline-primary"><i class="fa-solid fa-file-import"></i> Import readings</button></div></form></div>
+<div class="row g-4">
+    <div class="col-lg-6"><h5>Recent water readings</h5><table class="table table-sm small"><thead><tr><th>Customer</th><th>Month</th><th>kl</th><th>Rate</th><th class="text-end">Amount</th></tr></thead><tbody>
+        @foreach (var w in Model.Water) { <tr><td>@w.Account.user.FullName</td><td>@w.BillingPeriod.ToString("MMM yyyy")</td><td>@w.UsageKl.ToString("N2")</td><td>&#82;@w.Rate.ToString("N2")</td><td class="text-end">&#82;@w.Amount.ToString("N2")</td></tr> }</tbody></table></div>
+    <div class="col-lg-6"><h5>Recent electricity transactions</h5><table class="table table-sm small"><thead><tr><th>Customer</th><th>Type</th><th>Units</th><th>Rate</th><th class="text-end">Amount</th></tr></thead><tbody>
+        @foreach (var e in Model.Electricity) { <tr><td>@e.Account.user.FullName</td><td>@e.TransactionType</td><td>@e.Units.ToString("N2")</td><td>&#82;@e.Rate.ToString("N2")</td><td class="text-end">&#82;@e.Amount.ToString("N2")</td></tr> }</tbody></table></div>
+</div>

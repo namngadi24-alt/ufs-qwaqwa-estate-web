@@ -1,0 +1,19 @@
+@model List<Tariff>
+@{ ViewData["Title"] = "Tariffs"; }
+<h2 class="mb-1">Tariffs and payment rates</h2>
+<p class="text-secondary">Changing a rate records the effective date, applies it to bills from that date, and shows a pop-up notification to affected customers. Rent is pro-rated by days in the move-in month.</p>
+<div class="table-responsive table-shell"><table class="table align-middle mb-0">
+    <thead><tr><th>Tariff</th><th>Current rate</th><th>Unit</th><th style="min-width:330px">Change rate</th></tr></thead>
+    <tbody>
+    @foreach (var t in Model)
+    {
+        var now = BillingService.RateOn(t, DateTime.Today);
+        <tr><td><strong>@t.Name</strong><div class="small text-secondary">@t.Category</div></td>
+            <td>&#82;@now.ToString("N2")@if (t.EffectiveFrom.Date > DateTime.Today) { <div class="small text-warning">&#82;@t.Rate.ToString("N2") from @t.EffectiveFrom.ToString("d MMM yyyy")</div> }</td>
+            <td class="small">@t.Unit</td>
+            <td><form asp-action="UpdateTariff" asp-route-id="@t.TariffId" method="post" class="row g-1">
+                <div class="col-4"><input name="rate" type="number" step="0.01" min="0.01" max="100000" class="form-control form-control-sm" value="@t.Rate.ToString(System.Globalization.CultureInfo.InvariantCulture)" required /></div>
+                <div class="col-5"><input name="effectiveDate" type="date" class="form-control form-control-sm" min="@DateTime.Today.ToString("yyyy-MM-dd")" value="@DateTime.Today.ToString("yyyy-MM-dd")" required /></div>
+                <div class="col-3"><button class="btn btn-sm btn-primary w-100" onclick="return confirm('Save this tariff change and notify affected customers?');"><i class="fa-solid fa-floppy-disk"></i> Save rate</button></div></form></td></tr>
+    }
+    </tbody></table></div>

@@ -1,0 +1,12 @@
+@{ ViewData["Title"] = "Administrator dashboard"; var stats = (DashboardStats)ViewBag.Stats; var pendingOfficers = (List<User>)ViewBag.PendingOfficers; }
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3"><div><h2 class="mb-0">Agent Head dashboard</h2><div class="text-secondary small">Administrator - includes every Financial Officer function</div></div>
+    <div class="d-flex gap-2 flex-wrap"><a asp-controller="FinancialOfficer" asp-action="Applications" class="btn btn-primary">Applications <span class="badge text-bg-light">@ViewBag.PendingApplications</span></a>
+    <a asp-controller="Customers" asp-action="Index" class="btn btn-outline-primary">Customers</a><a asp-controller="ManageAccommodation" asp-action="Index" class="btn btn-outline-primary">Accommodation</a>
+    <a asp-action="FinancialOfficers" class="btn btn-outline-primary">Financial officers</a><a asp-action="ResetRequests" class="btn btn-outline-primary">Reset requests @if (stats.PendingResetRequests > 0) { <span class="badge text-bg-danger">@stats.PendingResetRequests</span> }</a></div></div>
+@if (pendingOfficers.Any()) { <div class="alert alert-warning">@pendingOfficers.Count financial officer(s) are waiting for authorisation. <a asp-action="FinancialOfficers">Review</a></div> }
+<partial name="_Stats" model="stats" />
+<div class="row g-3">
+    <div class="col-md-4"><a asp-controller="FinancialOfficer" asp-action="Tariffs" class="card dashboard-card p-3 text-decoration-none h-100"><strong>Tariffs &amp; rates</strong><span class="small text-secondary">Rent, water, electricity, refuse, parking</span></a></div>
+    <div class="col-md-4"><a asp-controller="FinancialOfficer" asp-action="Utilities" class="card dashboard-card p-3 text-decoration-none h-100"><strong>Water &amp; electricity</strong><span class="small text-secondary">Record or import usage</span></a></div>
+    <div class="col-md-4"><a asp-controller="Maintenance" asp-action="Manage" class="card dashboard-card p-3 text-decoration-none h-100"><strong>Maintenance</strong><span class="small text-secondary">@ViewBag.OpenMaintenance new request(s)</span></a></div>
+</div>

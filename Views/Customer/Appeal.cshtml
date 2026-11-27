@@ -1,0 +1,88 @@
+﻿@model CustomerAppealViewModel
+@{
+    ViewData["Title"] = "Account status & appeal";
+}
+
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="page-header">
+            <div class="text-uppercase small fw-bold text-danger" style="letter-spacing:.1em;">Customer portal</div>
+            <h1 class="h2 mb-1">Account status &amp; appeal</h1>
+        </div>
+
+        @if (!Model.IsSuspended)
+        {
+            <div class="alert alert-success shadow-sm">
+                <i class="fa-solid fa-circle-check me-2"></i>Your account is <strong>active</strong>. All functions are available.
+            </div>
+        }
+        else
+        {
+            <div class="card shadow-sm mb-4 border-danger">
+                <div class="card-body p-4">
+                    <h2 class="h5 fw-bold text-danger"><i class="fa-solid fa-ban me-2"></i>Your account is suspended</h2>
+                    @if (Model.DateSuspended != null)
+                    {
+                        <div class="small text-secondary mb-2">Since @Model.DateSuspended.Value.ToLocalTime().ToString("d MMMM yyyy HH:mm")</div>
+                    }
+                    <div><strong>Reason:</strong> @(string.IsNullOrWhiteSpace(Model.SuspensionReason) ? "No reason recorded." : Model.SuspensionReason)</div>
+                    <hr />
+                    <div class="small">
+                        <strong>Unavailable while suspended:</strong> making payments, editing your profile and leaving reviews.<br />
+                        <strong>Still available:</strong> viewing your account, payment history and notifications, changing your password and appealing.
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.HasPendingAppeal)
+            {
+                <div class="alert alert-warning shadow-sm">
+                    <i class="fa-solid fa-hourglass-half me-2"></i>Your appeal has been submitted and is waiting for a decision. You'll be notified once it has been reviewed.
+                </div>
+            }
+            else
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="h5 fw-bold">Submit an appeal</h2>
+                        <p class="text-secondary small">Explain why your account should be reinstated. An administrator or financial officer will review it.</p>
+                        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+                        <form asp-action="Appeal" method="post">
+                            <div class="mb-3">
+                                <label asp-for="NewAppeal.AppealReason" class="form-label fw-semibold"></label>
+                                <textarea asp-for="NewAppeal.AppealReason" class="form-control" rows="5" maxlength="2000"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane me-2"></i>Submit appeal</button>
+                        </form>
+                    </div>
+                </div>
+            }
+        }
+
+        @if (Model.PreviousAppeals.Any())
+        {
+            <h2 class="h5 fw-bold mb-2">My appeals</h2>
+            <div class="table-shell shadow-sm">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>Submitted</th><th>My appeal</th><th>Status</th><th>Response</th></tr></thead>
+                        <tbody>
+                        @foreach (var a in Model.PreviousAppeals)
+                        {
+                            var cls = a.Status == AppealStatuses.Approved ? "badge-soft-success" : a.Status == AppealStatuses.Rejected ? "badge-soft-danger" : "badge-soft-warning";
+                            <tr>
+                                <td class="text-nowrap">@a.DateSubmitted.ToLocalTime().ToString("dd MMM yyyy")</td>
+                                <td>@a.AppealReason</td>
+                                <td><span class="badge @cls">@a.Status</span></td>
+                                <td class="small">@a.ResponseNote @if (a.ReviewedBy != null) { <div class="text-secondary">— @a.ReviewedBy</div> }</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <a asp-action="Index" class="btn btn-outline-secondary mt-3">Back to my account</a>
+    </div>
+</div>

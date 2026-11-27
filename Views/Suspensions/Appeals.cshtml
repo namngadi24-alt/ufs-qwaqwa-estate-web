@@ -1,0 +1,67 @@
+@model IEnumerable<Appeal>
+@{
+    ViewData["Title"] = "Appeals";
+    var status = ViewBag.Status as string ?? "Pending";
+    var filters = new[] { "Pending", "Approved", "Rejected", "All" };
+}
+
+<div class="page-header d-flex justify-content-between flex-wrap gap-2">
+    <div>
+        <div class="text-uppercase small fw-bold text-danger" style="letter-spacing:.1em;">Customer management</div>
+        <h1 class="h2 mb-1">Suspension appeals</h1>
+        <p class="text-secondary mb-0">Approving an appeal reinstates the customer's account. Rejecting it keeps the account suspended (the customer may appeal again). The customer is notified either way.</p>
+    </div>
+    <div class="btn-group align-self-start">
+        @foreach (var f in filters)
+        {
+            <a asp-action="Appeals" asp-route-status="@f" class="btn btn-sm @(f == status ? "btn-danger" : "btn-outline-secondary")">
+                @f @if (f == "Pending") { <span class="badge bg-light text-dark ms-1">@ViewBag.PendingCount</span> }
+            </a>
+        }
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card shadow-sm"><div class="empty-state"><i class="fa-solid fa-circle-check fs-2 text-success mb-2"></i><div>No @(status == "All" ? "" : status.ToLowerInvariant()) appeals.</div></div></div>
+}
+
+@foreach (var a in Model)
+{
+    var account = a.user?.accounts.FirstOrDefault();
+    var cls = a.Status == AppealStatuses.Approved ? "badge-soft-success" : a.Status == AppealStatuses.Rejected ? "badge-soft-danger" : "badge-soft-warning";
+    <div class="card shadow-sm mb-3">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between flex-wrap gap-2">
+                <div>
+                    <h2 class="h6 fw-bold mb-0">Appeal #@a.AppealId — @a.user?.UserName @a.user?.UserSurname <small class="text-secondary fw-normal">(@a.user?.UserEmail)</small></h2>
+                    <div class="small text-secondary">Submitted @a.DateSubmitted.ToLocalTime().ToString("d MMM yyyy HH:mm")</div>
+                </div>
+                <span class="badge @cls align-self-start">@a.Status</span>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(account?.SuspensionReason))
+            {
+                <div class="small mt-2"><strong>Suspension reason:</strong> @account.SuspensionReason</div>
+            }
+            <div class="mt-2 p-3 bg-light rounded-3"><strong>Customer's appeal:</strong> @a.AppealReason</div>
+
+            @if (a.Status == AppealStatuses.Pending)
+            {
+                <form asp-action="DecideAppeal" asp-route-id="@a.AppealId" method="post" class="mt-3">
+                    <label class="form-label small fw-semibold" for="note-@a.AppealId">Response to the customer (required when rejecting)</label>
+                    <textarea id="note-@a.AppealId" name="responseNote" class="form-control mb-2" rows="2" maxlength="1000"></textarea>
+                    <button type="submit" name="decision" value="approve" class="btn btn-success btn-sm"><i class="fa-solid fa-check me-1"></i>Approve &amp; reinstate</button>
+                    <button type="submit" name="decision" value="reject" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-xmark me-1"></i>Reject</button>
+                </form>
+            }
+            else
+            {
+                <div class="small mt-2 text-secondary">
+                    Decided @a.DateReviewed?.ToLocalTime().ToString("d MMM yyyy HH:mm") by @a.ReviewedBy.
+                    @if (!string.IsNullOrWhiteSpace(a.ResponseNote)) { <span>Response: @a.ResponseNote</span> }
+                </div>
+            }
+        </div>
+    </div>
+}

@@ -1,0 +1,84 @@
+@model PayViewModel
+@{ ViewData["Title"] = "Pay"; }
+<div class="d-flex justify-content-between align-items-center mb-3"><h2 class="mb-0">Pay your accommodation bills</h2>
+    <a asp-action="Electricity" class="btn btn-outline-primary"><i class="fa-solid fa-bolt me-1"></i>Buy electricity</a></div>
+<div class="row g-4 mb-4">
+    <div class="col-lg-5">
+        <div class="pay-card account-card">
+            <span class="chip"></span><span class="brand gold">UFS</span>
+            <div class="pan">@Model.AccountNumber</div>
+            <div class="d-flex justify-content-between align-items-end">
+                <div><div class="tiny">Account holder</div><div class="fw-semibold">@Model.CustomerName.ToUpper()</div>
+                    <div class="small opacity-75">@Model.IdentificationNumber</div><div class="small opacity-75">@Model.Room</div></div>
+                <div class="text-end"><div class="tiny">Outstanding</div><div class="fs-5 gold">&#82;@Model.Outstanding.ToString("N2")</div>
+                    <div class="tiny mt-1">Electricity</div><div class="gold">@Model.ElectricityUnits.ToString("N2") units</div></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7"><div class="card dashboard-card p-3 h-100">
+        <h6>How billing works</h6>
+        <ul class="small mb-0">
+            <li>Rent and refuse are billed per approved room using the current tariff.</li>
+            <li>Your first month's rent and refuse charges are prorated from the planned move-in date and can be paid as soon as your residence application is approved.</li>
+            <li>Parking is charged for each additional vehicle you indicated on your application, beginning in the first month.</li>
+            <li>Water is billed from the usage recorded for your room; electricity is bought in units below.</li>
+            <li>After the current month is paid, you can select the following month's rent, refuse and parking charges in advance. The line item explains which month it covers.</li>
+            <li>Select one or several charges to pay them together in a single transaction.</li>
+            <li>After you pay, the payment is <strong>pending</strong> until a Financial Officer or the Agent Head accepts it; then it becomes <strong>successful</strong>.</li>
+        </ul></div></div>
+</div>
+@foreach (var w in Model.Warnings)
+{
+    <div class="alert alert-warning"><i class="fa-solid fa-triangle-exclamation me-1"></i>@w</div>
+}
+<div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+<form asp-action="Pay" method="post" id="payForm" novalidate>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card dashboard-card p-3">
+            <div class="d-flex justify-content-between align-items-center"><h5>Select charges to pay</h5>
+                <div class="form-check"><input type="checkbox" class="form-check-input" id="selectAll" /><label class="form-check-label small" for="selectAll">Select all due charges</label></div></div>
+            @if (Model.Items.Count == 0) { <p class="text-secondary mb-0">You have no outstanding charges right now.</p> }
+            <div class="table-responsive"><table class="table align-middle">
+                <tbody>
+                @foreach (var i in Model.Items)
+                {
+                    <tr class="@(i.IsPaid ? "table-success" : i.IsAdvance ? "table-light" : "")">
+                        <td style="width:36px">@if (i.IsPaid) { <i class="fa-solid fa-circle-check text-success" title="Paid"></i> } else { <input class="form-check-input item-check" type="checkbox" name="SelectedKeys" value="@i.Key" data-amount="@i.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-advance="@(i.IsAdvance ? "1" : "0")" checked="@Model.SelectedKeys.Contains(i.Key)" /> }</td>
+                        <td>@i.Description
+                            <div class="small @(i.IsPaid ? "text-success" : i.IsAdvance ? "text-primary" : i.DueDate < DateTime.Today ? "text-danger" : "text-secondary")">@i.Note</div>
+                            @if (i.Quantity != 1 && i.QuantityUnit != null) { <div class="small text-secondary">@i.Quantity.ToString("N2") @i.QuantityUnit x &#82;@i.Rate.ToString("N2")</div> }</td>
+                        <td class="text-end fw-semibold">&#82;@i.Amount.ToString("N2")</td>
+                    </tr>
+                }
+                </tbody>
+            </table></div>
+            <div class="d-flex justify-content-between border-top pt-2"><span class="fw-semibold">Total selected</span><span class="fs-5 fw-bold" id="totalText">R0.00</span></div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card dashboard-card p-3">
+            <h5>Card details</h5>
+            <div class="mb-3"><partial name="_CardPreview" /></div>
+            <partial name="_CardFields" model="Model" />
+            <button type="button" class="btn btn-primary w-100 mt-3" id="payBtn"><i class="fa-solid fa-lock"></i> Pay now</button>
+            
+        </div>
+    </div>
+</div>
+<partial name="_ConfirmModal" />
+</form>
+@section Scripts {
+<script src="~/js/payment.js" asp-append-version="true"></script>
+<script>
+    (function () {
+        var checks = Array.prototype.slice.call(document.querySelectorAll('.item-check'));
+        function total() { return checks.filter(function (c) { return c.checked && !c.disabled; }).reduce(function (s, c) { return s + parseFloat(c.dataset.amount); }, 0); }
+        function refresh() { document.getElementById('totalText').textContent = 'R' + total().toFixed(2); }
+        checks.forEach(function (c) { c.addEventListener('change', refresh); });
+        document.getElementById('selectAll').addEventListener('change', function () { var on = this.checked; checks.forEach(function (c) { if (c.dataset.advance === '0') c.checked = on; }); refresh(); });
+        refresh();
+        initCardForm(total, function () { return total() > 0 ? '' : 'Select at least one charge to pay.'; });
+    })();
+</script>
+}

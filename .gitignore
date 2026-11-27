@@ -1,0 +1,29 @@
+# Build output
+bin/
+obj/
+TestResults/
+publish/
+
+# Visual Studio and editor state
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+secrets.json
+appsettings.*.local.json
+
+# Hosting credentials and publish profiles
+Properties/PublishProfiles/
+*.publishsettings
+*.publishSettings
+
+# OS files
+.DS_Store
+Thumbs.db

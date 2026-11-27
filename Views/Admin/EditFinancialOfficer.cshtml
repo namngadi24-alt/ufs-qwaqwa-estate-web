@@ -1,0 +1,19 @@
+@model EditFinancialOfficerViewModel
+@{ ViewData["Title"] = "Edit financial officer"; }
+<div class="row justify-content-center"><div class="col-lg-7"><div class="card dashboard-card p-4">
+    <h2>Edit financial officer</h2>
+    <p class="text-secondary">Update this officer's personal and contact details. Authorisation remains a separate administrator-controlled action.</p>
+    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+    <form asp-action="EditFinancialOfficer" method="post">
+        <input asp-for="UserId" type="hidden" />
+        <div class="row g-3">
+            <div class="col-md-6"><label asp-for="FirstName" class="form-label"></label><input asp-for="FirstName" class="form-control" required /></div>
+            <div class="col-md-6"><label asp-for="Surname" class="form-label"></label><input asp-for="Surname" class="form-control" required /></div>
+            <div class="col-md-6"><label asp-for="IdentificationNumber" class="form-label"></label><input asp-for="IdentificationNumber" class="form-control" inputmode="numeric" pattern="[0-9]{8}" required /></div>
+            <div class="col-md-6"><label asp-for="PhoneNumber" class="form-label"></label><input asp-for="PhoneNumber" class="form-control" type="tel" pattern="(\+27|0)[0-9]{9}" required /></div>
+            <div class="col-12"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" type="email" required /><div class="form-text">Use the staff number followed by @@ufs4life.ac.za.</div></div>
+        </div>
+        <button class="btn btn-primary mt-4" type="submit">Save officer details</button>
+        <a asp-action="FinancialOfficers" class="btn btn-link mt-4">Cancel</a>
+    </form>
+</div></div></div>

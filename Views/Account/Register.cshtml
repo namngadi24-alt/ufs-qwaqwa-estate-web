@@ -1,0 +1,51 @@
+@model RegisterViewModel
+@{ ViewData["Title"] = "Register"; }
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card dashboard-card p-4">
+        <h2 class="mb-1">Create your account</h2>
+        <p class="text-secondary">This creates your account and personal profile. Accommodation details (such as vehicles and room choice) are collected later, when you apply.</p>
+        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+        <form asp-action="Register" method="post" novalidate id="registerForm">
+            <div class="row g-3">
+                <div class="col-md-6"><label asp-for="FName" class="form-label fw-semibold"></label><input asp-for="FName" class="form-control" maxlength="50" required /></div>
+                <div class="col-md-6"><label asp-for="Surname" class="form-label fw-semibold"></label><input asp-for="Surname" class="form-control" maxlength="50" required /></div>
+                <div class="col-md-6">
+                    <label asp-for="PersonType" class="form-label fw-semibold"></label>
+                    <select asp-for="PersonType" class="form-select" required>
+                        <option value="">Select...</option>
+                        <option value="Student">Student</option>
+                        <option value="Staff">Staff member</option>
+                    </select>
+                </div>
+                <div class="col-md-6"><partial name="_IdentificationNumberField" model="Model" /></div>
+                <div class="col-md-6"><label asp-for="PhoneNumber" class="form-label fw-semibold"></label>
+                    <input asp-for="PhoneNumber" class="form-control" type="tel" placeholder="0821234567" pattern="(\+27|0)[0-9]{9}" title="@RegisterViewModel.PhoneError" required /></div>
+                <div class="col-md-6"><label asp-for="Email" class="form-label fw-semibold"></label>
+                    <input asp-for="Email" class="form-control" type="email" placeholder="number@ufs4life.ac.za" pattern="[0-9]+@@ufs4life\.ac\.za" required />
+                    <div class="form-text" id="emailHelp">Must be <em>studentOrStaffNumber</em>@@ufs4life.ac.za</div></div>
+                <div class="col-md-6"><label asp-for="Password" class="form-label fw-semibold"></label><input asp-for="Password" class="form-control" autocomplete="new-password" required />
+                    <partial name="_PasswordRules" model="@("Password")" /></div>
+                <div class="col-md-6"><label asp-for="ConfirmPassword" class="form-label fw-semibold"></label><input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" required /></div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-4">Register</button>
+            <a asp-action="Login" class="btn btn-link mt-4">Already registered? Sign in</a>
+        </form>
+    </div>
+  </div>
+</div>
+@section Scripts {
+<script>
+    (function () {
+        var id = document.getElementById('IdentificationNumber'), email = document.getElementById('Email');
+        id.addEventListener('input', function () {
+            if (!email.value || /^[0-9]*@@ufs4life\.ac\.za$/.test(email.value)) email.value = id.value ? id.value + '@@ufs4life.ac.za' : '';
+        });
+        document.getElementById('registerForm').addEventListener('submit', function (e) {
+            var f = this; if (!f.checkValidity()) { e.preventDefault(); f.reportValidity(); return; }
+            var want = id.value + '@@ufs4life.ac.za';
+            if (email.value.toLowerCase() !== want) { e.preventDefault(); email.setCustomValidity('Email must be ' + want); email.reportValidity(); email.setCustomValidity(''); }
+        });
+    })();
+</script>
+}

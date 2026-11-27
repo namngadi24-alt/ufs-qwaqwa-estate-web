@@ -1,0 +1,32 @@
+@model LoginViewModel
+@{ ViewData["Title"] = "Sign in"; }
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card dashboard-card p-4">
+        <h2 class="mb-3">Sign in</h2>
+        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+        <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post" novalidate>
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label fw-semibold">UFS email address</label>
+                <input asp-for="Email" class="form-control" placeholder="2024123456@ufs4life.ac.za" autocomplete="username" required />
+            </div>
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label fw-semibold"></label>
+                <input asp-for="Password" class="form-control" autocomplete="current-password" required />
+            </div>
+            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-right-to-bracket"></i> Sign in</button>
+        </form>
+        <hr />
+        <div class="small d-flex flex-column gap-1">
+            <a asp-action="Register">New here? Create an account</a>
+            <a asp-action="ForgotPassword">Financial officer: request a password reset</a>
+            <a asp-action="CompleteReset">Financial officer: complete an approved reset</a>
+        </div>
+    </div>
+  </div>
+</div>
+@section Scripts {
+<script>
+    document.querySelector('form[method=post]').addEventListener('submit', function () { try { sessionStorage.setItem('ufs_active', '1'); } catch (e) { } });
+</script>
+}

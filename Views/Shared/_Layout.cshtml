@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - UFS QwaQwa Estate Accommodation</title>
+    <link asp-href-include="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link asp-href-include="/lib/font-awesome/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/customer.css" asp-append-version="true" />
+    <style>
+        .field-validation-error, .field-validation-valid { display: none !important; }
+        .validation-summary-valid { display: none !important; }
+        .validation-summary-errors { display: block !important; }
+        .validation-summary-errors ul { margin-bottom: 0; padding-left: 1.25rem; }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    @{
+        var isAuth = User.Identity?.IsAuthenticated == true;
+        var isAdmin = User.IsInRole("Admin");
+        var isOfficer = User.IsInRole("FinancialOfficer");
+        var isStaff = isAdmin || isOfficer;
+        var isDemo = User.HasClaim("IsDemo", "true");
+        var unreadBadge = isAuth ? await Component.InvokeAsync("NotificationBadge") : null;
+    }
+    <nav class="navbar navbar-expand-xl border-bottom shadow-sm sticky-top">
+        <div class="container-fluid px-lg-4">
+            <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
+                <img src="~/images/imgufsqq.jpg" alt="UFS QwaQwa Campus" class="rounded-3" width="44" height="44" />
+                <span class="brand-name fw-bold d-none d-sm-inline">UFS QwaQwa Estate Accommodation</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#MyNavbar" aria-controls="MyNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="MyNavbar">
+                <ul class="navbar-nav ms-auto align-items-xl-center gap-xl-1">
+                    <li class="nav-item"><a asp-controller="Home" asp-action="Index" class="nav-link"><i class="fa-solid fa-house"></i> Home</a></li>
+                    <li class="nav-item"><a asp-controller="Accommodation" asp-action="Index" class="nav-link"><i class="fa-solid fa-building"></i> Accommodation</a></li>
+                    @if (isAuth)
+                    {
+                        if (isStaff)
+                        {
+                            <li class="nav-item"><a asp-controller="@(isAdmin ? "Admin" : "FinancialOfficer")" asp-action="Index" class="nav-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a></li>
+                            <li class="nav-item"><a asp-controller="FinancialOfficer" asp-action="Applications" class="nav-link"><i class="fa-solid fa-file-circle-check"></i> Applications</a></li>
+                            <li class="nav-item"><a asp-controller="FinancialOfficer" asp-action="ExitRequests" class="nav-link"><i class="fa-solid fa-right-from-bracket"></i> Exit requests</a></li>
+                            <li class="nav-item"><a asp-controller="Customers" asp-action="Index" class="nav-link"><i class="fa-solid fa-users"></i> Customers</a></li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-coins"></i> Finance</a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item" asp-controller="FinancialOfficer" asp-action="Tariffs">Tariffs &amp; payment rates</a></li>
+                                    <li><a class="dropdown-item" asp-controller="FinancialOfficer" asp-action="Utilities">Water &amp; electricity</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Payment" asp-action="History">Payments &amp; transactions</a></li>
+                                    <li><a class="dropdown-item" asp-controller="FinancialOfficer" asp-action="Compliance">Payment compliance</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Reports" asp-action="Index">Reports</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item"><a asp-controller="Maintenance" asp-action="Manage" class="nav-link"><i class="fa-solid fa-screwdriver-wrench"></i> Maintenance</a></li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-ellipsis"></i> More</a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item" asp-controller="Suspensions" asp-action="Appeals">Suspensions &amp; appeals</a></li>
+                                    <li><a class="dropdown-item" asp-controller="FinancialOfficer" asp-action="Reviews">Reviews &amp; ratings</a></li>
+                                    @if (isAdmin)
+                                    {
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li><h6 class="dropdown-header">Administrator only</h6></li>
+                                        <li><a class="dropdown-item" asp-controller="ManageAccommodation" asp-action="Index">Manage accommodation</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="FinancialOfficers">Financial officers</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="ResetRequests">Password reset requests</a></li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a asp-controller="Customer" asp-action="Index" class="nav-link"><i class="fa-solid fa-wallet"></i> My Dashboard</a></li>
+                            <li class="nav-item"><a asp-controller="Application" asp-action="Index" class="nav-link"><i class="fa-solid fa-file-signature"></i> Applications</a></li>
+                            <li class="nav-item"><a asp-controller="Customer" asp-action="ExitResidence" class="nav-link"><i class="fa-solid fa-door-open"></i> Leave residence</a></li>
+                            <li class="nav-item"><a asp-controller="Payment" asp-action="Pay" class="nav-link"><i class="fa-solid fa-credit-card"></i> Pay bills</a></li>
+                            <li class="nav-item"><a asp-controller="Payment" asp-action="Electricity" class="nav-link"><i class="fa-solid fa-bolt"></i> Electricity</a></li>
+                            <li class="nav-item"><a asp-controller="Payment" asp-action="History" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i> History</a></li>
+                        }
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-bell"></i> Account @unreadBadge</a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                <li><a class="dropdown-item" asp-controller="Notifications" asp-action="Index">Notifications @unreadBadge</a></li>
+                                @if (!isStaff)
+                                {
+                                    <li><a class="dropdown-item" asp-controller="Customer" asp-action="Profile">My profile</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Customer" asp-action="ChangePassword">Change password</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Reviews" asp-action="Create">Leave a review</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Customer" asp-action="Appeal">Account status / appeal</a></li>
+                                }
+                            </ul>
+                        </li>
+                        <li class="nav-item ms-xl-2 d-flex align-items-center">
+                            <span class="nav-user"><i class="fa-solid fa-circle-user"></i>@User.Identity?.Name
+                                @if (isDemo) { <span class="badge text-bg-warning ms-1" title="Demonstration account - disabled in production">DEMO</span> }
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+                            </form>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item"><a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary"><i class="fa-solid fa-user-plus"></i> Register</a></li>
+                        <li class="nav-item"><a asp-controller="Account" asp-action="Login" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Sign in</a></li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100; margin-top:70px;" id="toastHost">
+        @foreach (var kind in new[] { ("Success", "success", "fa-circle-check"), ("Warning", "warning", "fa-triangle-exclamation"), ("Error", "danger", "fa-circle-exclamation") })
+        {
+            if (TempData[kind.Item1] != null)
+            {
+                <div class="toast align-items-center border-0 text-bg-@kind.Item2" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="7000">
+                    <div class="d-flex">
+                        <div class="toast-body"><i class="fa-solid @kind.Item3 me-2"></i>@TempData[kind.Item1]</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            }
+        }
+        @if (isAuth)
+        {
+            @await Component.InvokeAsync("Toasts")
+        }
+    </div>
+
+    <main class="container-fluid px-3 px-lg-4 py-4 flex-grow-1">
+        @RenderBody()
+    </main>
+
+    <footer class="mt-auto py-4">
+        <div class="container-fluid px-3 px-lg-4">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-7">
+                    <strong>UFS QwaQwa Estate Accommodation</strong>
+                    <div class="small opacity-75">CSIQ 3784 Software Engineering Project</div>
+                </div>
+                <div class="col-md-5 text-md-end small">
+                    <div>Created by: 2025706751 NA Mngadi</div>
+                    <a href="mailto:2025706751@ufs4life.ac.za" class="text-decoration-none">2025706751@ufs4life.ac.za</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelectorAll('#toastHost .toast').forEach(function (el) { new bootstrap.Toast(el).show(); });
+
+        // Highlight the current page in the navigation.
+        (function () {
+            var path = location.pathname.toLowerCase().replace(/\/$/, '') || '/';
+            var best = null, bestLen = -1;
+            document.querySelectorAll('.navbar .nav-link[href], .navbar .dropdown-item[href]').forEach(function (a) {
+                var h = (a.getAttribute('href') || '').toLowerCase().split('?')[0].replace(/\/$/, '') || '/';
+                if (h === '#') return;
+                if ((path === h || (h !== '/' && path.indexOf(h + '/') === 0)) && h.length > bestLen) { best = a; bestLen = h.length; }
+            });
+            if (best) {
+                best.classList.add('active');
+                var menu = best.closest('.dropdown-menu');
+                if (menu) { var t = menu.parentElement.querySelector('.dropdown-toggle'); if (t) t.classList.add('active'); }
+            }
+        })();
+    </script>
+    @if (isAuth)
+    {
+        <script>
+            // Closing the browser tab/window ends the session: sessionStorage disappears when it is closed.
+            (function () {
+                try {
+                    if (!sessionStorage.getItem('ufs_active')) {
+                        var f = document.getElementById('logoutForm');
+                        if (f) { f.submit(); return; }
+                    }
+                } catch (e) { }
+            })();
+        </script>
+    }
+    else
+    {
+        <script>try { sessionStorage.removeItem('ufs_active'); } catch (e) { }</script>
+    }
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

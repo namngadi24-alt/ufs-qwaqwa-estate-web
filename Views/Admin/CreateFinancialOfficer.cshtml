@@ -1,0 +1,14 @@
+@model CreateFinancialOfficerViewModel
+@{ ViewData["Title"] = "Add financial officer"; }
+<div class="row justify-content-center"><div class="col-lg-7"><div class="card dashboard-card p-4"><h2>Add financial officer</h2>
+    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+    <form asp-action="CreateFinancialOfficer" method="post" novalidate id="foForm"><div class="row g-3">
+        <div class="col-md-6"><label asp-for="FName" class="form-label fw-semibold"></label><input asp-for="FName" class="form-control" required /></div>
+        <div class="col-md-6"><label asp-for="Surname" class="form-label fw-semibold"></label><input asp-for="Surname" class="form-control" required /></div>
+        <div class="col-md-6"><label asp-for="IdentificationNumber" class="form-label fw-semibold"></label><input asp-for="IdentificationNumber" class="form-control" inputmode="numeric" pattern="[0-9]{8}" title="8 digits" required /></div>
+        <div class="col-md-6"><label asp-for="PhoneNumber" class="form-label fw-semibold"></label><input asp-for="PhoneNumber" class="form-control" type="tel" pattern="(\+27|0)[0-9]{9}" required /></div>
+        <div class="col-12"><label asp-for="Email" class="form-label fw-semibold"></label><input asp-for="Email" class="form-control" type="email" pattern="[0-9]+@@ufs4life\.ac\.za" placeholder="staffNumber@@ufs4life.ac.za" required /></div>
+        <div class="col-md-6"><label asp-for="Password" class="form-label fw-semibold"></label><input asp-for="Password" class="form-control" autocomplete="new-password" required /><partial name="_PasswordRules" model="@("Password")" /></div>
+        <div class="col-md-6"><label asp-for="ConfirmPassword" class="form-label fw-semibold"></label><input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" required /></div></div>
+        <button class="btn btn-primary mt-4" type="submit">Create &amp; authorise</button><a asp-action="FinancialOfficers" class="btn btn-link mt-4">Cancel</a></form></div></div></div>
+@section Scripts { <script>document.getElementById('foForm').addEventListener('submit', function (e) { if (!this.checkValidity()) { e.preventDefault(); this.reportValidity(); } });</script> }

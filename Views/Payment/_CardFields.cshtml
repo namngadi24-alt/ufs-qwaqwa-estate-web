@@ -1,0 +1,13 @@
+@model dynamic
+<div id="clientErrors" class="alert alert-danger d-none" role="alert"></div>
+<div class="row g-3">
+    <div class="col-12"><label class="form-label fw-semibold" for="CardHolder">Name on card</label>
+        <input class="form-control" id="CardHolder" name="CardHolder" value="@Model.CardHolder" maxlength="60" autocomplete="cc-name" required /></div>
+    <div class="col-12"><label class="form-label fw-semibold" for="CardNumber">Card number</label>
+        <input class="form-control" id="CardNumber" name="CardNumber" inputmode="numeric" autocomplete="cc-number" placeholder="4242 4242 4242 4242" maxlength="23" required /></div>
+    <div class="col-6"><label class="form-label fw-semibold" for="Expiry">Expiry (MM/YY)</label>
+        <input class="form-control" id="Expiry" name="Expiry" value="@Model.Expiry" placeholder="08/29" maxlength="5" autocomplete="cc-exp" required /></div>
+    <div class="col-6"><label class="form-label fw-semibold" for="Cvv">Security code (CVV)</label>
+        <input class="form-control" id="Cvv" name="Cvv" inputmode="numeric" maxlength="4" autocomplete="cc-csc" type="password" required /></div>
+</div>
+<div class="form-text mt-2"><i class="fa-solid fa-lock me-1"></i>Card details are sent to the payment provider. Only the last four digits are kept on your payment record - never the full number or CVV.</div>

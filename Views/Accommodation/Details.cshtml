@@ -1,0 +1,69 @@
+@model Accommodation
+@{
+    ViewData["Title"] = Model.AccommodationName;
+    var rooms = (List<RoomInfo>)ViewBag.Rooms;
+    var tariffs = (List<Tariff>)ViewBag.Tariffs;
+    var isCustomer = User.IsInRole("Customer");
+    var signedIn = User.Identity?.IsAuthenticated == true;
+    Tariff? T(string cat) => tariffs.FirstOrDefault(t => t.Category == cat);
+}
+<nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a asp-action="Index">Accommodation</a></li><li class="breadcrumb-item active">@Model.AccommodationName</li></ol></nav>
+<h2>@Model.AccommodationName <span class="badge badge-soft-secondary fs-6">@Model.AccommodationType</span></h2>
+<p class="text-secondary"><i class="fa-solid fa-location-dot me-1"></i>@Model.AccommodationLocation</p>
+<div class="row g-3 gallery mb-4">
+    @foreach (var p in Model.Photos)
+    {
+        <div class="col-md-6 col-lg-4"><figure class="mb-0"><img src="@p.Path" alt="@(p.Caption ?? Model.AccommodationName)" /><figcaption class="small text-secondary mt-1">@p.Caption</figcaption></figure></div>
+    }
+    @if (!Model.Photos.Any()) { <div class="col-12 text-secondary">No photographs have been added yet.</div> }
+</div>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <p>@Model.Description</p>
+        <h4 class="mt-4">Rooms and availability</h4>
+        <div class="table-responsive table-shell">
+        <table class="table align-middle mb-0">
+            <thead><tr><th>Room</th><th>Type</th><th>Facilities</th><th>Rent / month</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var r in rooms)
+            {
+                <tr class="room-row @(r.IsAvailable ? "" : "unavailable")">
+                    <td><strong>@r.Room.RoomNumber</strong><div class="small text-secondary">sleeps @r.Room.Capacity</div></td>
+                    <td>@r.Room.RoomType</td>
+                    <td class="small">@r.Room.Facilities</td>
+                    <td>@(r.Rent == null ? "-" : "R" + r.Rent.Value.ToString("N2"))</td>
+                    <td><span class="badge @(r.IsAvailable ? "badge-soft-success" : r.Room.IsUnderMaintenance ? "badge-soft-warning" : "badge-soft-danger")">@r.Status</span></td>
+                    <td class="text-end">
+                        @if (r.IsAvailable)
+                        {
+                            if (isCustomer || !signedIn)
+                            {
+                                <a asp-controller="Application" asp-action="Create" asp-route-roomId="@r.Room.RoomId" class="btn btn-sm btn-primary"><i class="fa-solid fa-file-signature"></i> Apply for this room</a>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table></div>
+        @if (!signedIn) { <p class="small text-secondary mt-2"><i class="fa-solid fa-circle-info me-1"></i>You will be asked to register or sign in when you press Apply.</p> }
+    </div>
+    <div class="col-lg-4">
+        <div class="card dashboard-card p-3 mb-3">
+            <h5>Payment rates</h5>
+            <ul class="list-unstyled small mb-0">
+                @foreach (var cat in new[] { TariffCategories.Water, TariffCategories.Electricity, TariffCategories.Refuse, TariffCategories.Parking })
+                {
+                    var t = T(cat);
+                    if (t != null) { <li class="d-flex justify-content-between py-1 border-bottom"><span>@t.Name</span><span>&#82;@(BillingService.RateOn(t, DateTime.Today).ToString("N2")) <span class="text-secondary">@t.Unit</span></span></li> }
+                }
+            </ul>
+            <div class="small text-secondary mt-2">Rent depends on the room type (see the table). Rates may change - you are notified of every tariff change.</div>
+        </div>
+        <div class="card dashboard-card p-3">
+            <h5>Rules and conditions</h5>
+            <p class="small mb-2">@Model.Rules</p>
+            <p class="small text-secondary mb-0">@ApplicationRules.RulesText</p>
+        </div>
+    </div>
+</div>

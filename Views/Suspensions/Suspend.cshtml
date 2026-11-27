@@ -1,0 +1,22 @@
+﻿@model SuspendAccountViewModel
+@{
+    ViewData["Title"] = "Suspend Account";
+}
+<div class="col-lg-7">
+    <h2 class="mb-2">Suspend customer account</h2>
+    <p class="text-secondary">
+        <strong>@Model.CustomerName</strong> (@Model.CustomerEmail) will be notified immediately. They can still log in, but they won't be able to
+        make payments, edit their profile or leave reviews until the account is reinstated. They can submit an appeal.
+    </p>
+
+    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+    <form asp-action="Suspend" method="post">
+        <input type="hidden" asp-for="UserId" />
+        <div class="mb-3">
+            <label asp-for="Reason" class="form-label fw-semibold"></label>
+            <textarea asp-for="Reason" class="form-control" rows="4" maxlength="1000" placeholder="e.g. Outstanding rent for three consecutive months."></textarea>
+        </div>
+        <button type="submit" class="btn btn-danger"><i class="fa-solid fa-ban me-1"></i>Suspend account</button>
+        <a asp-controller="Customers" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+    </form>
+</div>

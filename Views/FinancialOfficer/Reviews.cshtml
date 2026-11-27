@@ -1,0 +1,9 @@
+@model List<Review>
+@{ ViewData["Title"] = "Reviews"; }
+<h2 class="mb-3">Customer reviews and ratings</h2>
+@if (Model.Count == 0) { <div class="empty-state p-5 text-center">No reviews yet.</div> }
+@foreach (var r in Model)
+{
+    <div class="card dashboard-card p-3 mb-2"><div class="d-flex justify-content-between"><strong>@r.user.FullName</strong><span>@string.Concat(Enumerable.Repeat("★", r.RatingScore))@string.Concat(Enumerable.Repeat("☆", 5 - r.RatingScore))</span></div>
+        <div>@r.ReviewDescription</div><div class="small text-secondary">@r.DateSubmitted.ToLocalTime().ToString("d MMM yyyy")</div></div>
+}

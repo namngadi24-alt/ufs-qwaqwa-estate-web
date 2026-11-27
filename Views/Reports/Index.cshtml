@@ -1,0 +1,61 @@
+@model IEnumerable<Report>
+@{
+    ViewData["Title"] = "Reports";
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fa-solid fa-chart-line text-danger me-2"></i>@(User.IsInRole("Admin") ? "All Reports" : "My Reports")</h2>
+    <div>
+        @if (User.IsInRole("FinancialOfficer") || User.IsInRole("Admin"))
+        {
+            <a asp-action="Create" class="btn btn-danger"><i class="fa-solid fa-plus me-1"></i>New Report</a>
+        }
+        @if (User.IsInRole("Admin"))
+        {
+            <form asp-action="GenerateSummaryReport" method="post" class="d-inline">
+                <button type="submit" class="btn btn-outline-danger"><i class="fa-solid fa-file-circle-plus me-1"></i>Generate Summary Report</button>
+            </form>
+        }
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">No reports yet.</p>
+}
+else
+{
+    <table class="table table-striped table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Title</th>
+                @if (User.IsInRole("Admin")) { <th>Written by</th> }
+                <th>Status</th>
+                <th>Date</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td><i class="fa-regular fa-file-lines me-1 text-muted"></i>@r.ReportTitle</td>
+                @if (User.IsInRole("Admin")) { <td>@r.user?.UserName @r.user?.UserSurname</td> }
+                <td><span class="badge bg-@(r.Status=="Submitted"?"success":"secondary")">@r.Status</span></td>
+                <td>@((r.Status == "Submitted" && r.DateSubmitted.HasValue) ? r.DateSubmitted.Value.ToString("dd MMM yyyy") : r.DateGenerated.ToString("dd MMM yyyy"))</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@r.ReportId" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-eye"></i> View</a>
+                    @if (r.Status == "Draft" && r.userId.ToString() == currentUserId)
+                    {
+                        <a asp-action="Edit" asp-route-id="@r.ReportId" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-pen"></i> Edit</a>
+                        <form asp-action="Delete" asp-route-id="@r.ReportId" method="post" class="d-inline" onsubmit="return confirm('Delete this draft report?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

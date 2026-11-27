@@ -1,0 +1,72 @@
+@model ApplicationFormViewModel
+@{ ViewData["Title"] = "Apply for accommodation"; }
+<h2>Apply for accommodation</h2>
+<p class="text-secondary">@ApplicationRules.RulesText</p>
+<div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+<form asp-action="Create" method="post" novalidate id="appForm">
+<input type="hidden" asp-for="ProfileLoaded" id="ProfileLoaded" />
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card dashboard-card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2"><h5 class="mb-0">1. Your profile</h5>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="loadProfile"><i class="fa-solid fa-user-check me-1"></i>Load my profile details</button></div>
+        <p class="small text-secondary">Press the button to copy your saved profile into this application. You do not need to type it again.</p>
+        <div class="mb-2"><label class="form-label small fw-semibold">Full name</label><input class="form-control" id="pName" readonly /></div>
+        <div class="mb-2"><label class="form-label small fw-semibold">@Model.PersonType number</label><input class="form-control" id="pNumber" readonly /></div>
+        <div class="mb-2"><label class="form-label small fw-semibold">Phone</label><input class="form-control" id="pPhone" readonly /></div>
+        <div class="mb-0"><label class="form-label small fw-semibold">Email</label><input class="form-control" id="pEmail" readonly /></div>
+    </div>
+    <div class="card dashboard-card p-3">
+        <h5>3. Accommodation details</h5>
+        <div class="mb-3"><label asp-for="PreferredRoomType" class="form-label fw-semibold"></label>
+            <select asp-for="PreferredRoomType" class="form-select"><option value="">No preference</option>@foreach (var t in RoomTypes.All) { <option value="@t">@t</option> }</select></div>
+        <div class="mb-3"><label asp-for="NumberOfVehicles" class="form-label fw-semibold"></label><input asp-for="NumberOfVehicles" type="number" min="0" max="10" class="form-control" required />
+            <div class="form-text">An additional-vehicle parking fee applies from your second vehicle.</div></div>
+        <div class="mb-3"><label asp-for="MoveInDate" class="form-label fw-semibold"></label><input asp-for="MoveInDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" max="@DateTime.Today.AddMonths(12).ToString("yyyy-MM-dd")" required />
+            <div class="form-text">If you move in mid-month, your first month's rent and refuse charges are prorated. If you indicate more than one vehicle, parking is charged for each additional vehicle.</div></div>
+        <div class="mb-3"><label asp-for="Notes" class="form-label fw-semibold"></label><textarea asp-for="Notes" class="form-control" rows="2" maxlength="1000"></textarea></div>
+        <div class="form-check mb-3"><input asp-for="AcceptRules" class="form-check-input" /><label asp-for="AcceptRules" class="form-check-label small">I have read the accommodation rules and conditions</label></div>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Submit application</button>
+        <a asp-action="Index" class="btn btn-link">Cancel</a>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card dashboard-card p-3">
+        <h5>2. Select your room(s) <span class="small text-secondary">(tick as many as you need)</span></h5>
+        <div class="table-responsive" style="max-height:560px;overflow:auto">
+        <table class="table table-sm align-middle">
+            <thead><tr><th></th><th>Room</th><th>Type</th><th>Rent</th></tr></thead>
+            <tbody>
+            @foreach (var r in Model.AvailableRooms)
+            {
+                <tr><td><input class="form-check-input room-check" type="checkbox" name="RoomIds" value="@r.Room.RoomId" id="room-@(r.Room.RoomId)" checked="@Model.RoomIds.Contains(r.Room.RoomId)" /></td>
+                    <td><label for="room-@(r.Room.RoomId)">@r.Room.Accommodation.AccommodationName - <strong>@r.Room.RoomNumber</strong></label></td>
+                    <td class="small">@r.Room.RoomType</td><td class="small">@(r.Rent == null ? "-" : "R" + r.Rent.Value.ToString("N2"))</td></tr>
+            }
+            </tbody>
+        </table></div>
+        @if (!Model.AvailableRooms.Any()) { <div class="text-secondary">No rooms are currently available.</div> }
+    </div>
+  </div>
+</div>
+</form>
+@section Scripts {
+<script>
+    (function () {
+        document.getElementById('loadProfile').addEventListener('click', function () {
+            document.getElementById('pName').value = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)ViewBag.ProfileName));
+            document.getElementById('pNumber').value = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)ViewBag.ProfileNumber));
+            document.getElementById('pPhone').value = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)ViewBag.ProfilePhone));
+            document.getElementById('pEmail').value = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)ViewBag.ProfileEmail));
+            document.getElementById('ProfileLoaded').value = 'true';
+            this.classList.replace('btn-outline-primary', 'btn-success'); this.textContent = 'Profile loaded';
+        });
+        document.getElementById('appForm').addEventListener('submit', function (e) {
+            if (document.getElementById('ProfileLoaded').value.toLowerCase() !== 'true') { e.preventDefault(); alert("Please press 'Load my profile details' first."); return; }
+            if (document.querySelectorAll('.room-check:checked').length === 0) { e.preventDefault(); alert('Please select at least one room.'); return; }
+            if (!this.checkValidity()) { e.preventDefault(); this.reportValidity(); }
+        });
+        if (document.getElementById('ProfileLoaded').value.toLowerCase() === 'true') document.getElementById('loadProfile').click();
+    })();
+</script>
+}

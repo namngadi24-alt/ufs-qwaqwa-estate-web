@@ -1,0 +1,13 @@
+@model List<ComplianceRow>
+@{ ViewData["Title"] = "Payment compliance"; }
+<h2 class="mb-3">Payment compliance</h2>
+<div class="table-responsive table-shell"><table class="table align-middle mb-0">
+    <thead><tr><th>Customer</th><th>Outstanding</th><th>Overdue</th><th>Last successful payment</th><th>Status</th><th></th></tr></thead><tbody>
+    @foreach (var r in Model)
+    {
+        <tr><td>@r.Customer.FullName<div class="small text-secondary">@r.Customer.IdentificationNumber</div></td>
+            <td>&#82;@r.Outstanding.ToString("N2")</td><td class="@(r.Overdue > 0 ? "text-danger fw-semibold" : "")">&#82;@r.Overdue.ToString("N2") @(r.OverdueCount > 0 ? "(" + r.OverdueCount + ")" : "")</td>
+            <td>@(r.LastPayment?.ToLocalTime().ToString("d MMM yyyy") ?? "never")</td>
+            <td><span class="badge @(r.Overdue > 0 ? "badge-soft-danger" : r.Outstanding > 0 ? "badge-soft-warning" : "badge-soft-success")">@(r.Overdue > 0 ? "Overdue" : r.Outstanding > 0 ? "Payment due" : "Up to date")</span></td>
+            <td><a asp-controller="Customers" asp-action="Details" asp-route-id="@r.Customer.UserId" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-eye"></i> View details</a></td></tr>
+    }</tbody></table></div>

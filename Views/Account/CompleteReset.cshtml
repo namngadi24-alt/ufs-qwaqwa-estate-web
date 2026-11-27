@@ -1,0 +1,14 @@
+@model CompleteResetViewModel
+@{ ViewData["Title"] = "Complete password reset"; }
+<div class="row justify-content-center"><div class="col-md-7 col-lg-6"><div class="card dashboard-card p-4">
+    <h2>Complete an approved reset</h2>
+    <p class="text-secondary">Use this once the administrator has approved your request (valid for 24 hours).</p>
+    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+    <form asp-action="CompleteReset" method="post" novalidate>
+        <div class="mb-3"><label asp-for="Email" class="form-label fw-semibold"></label><input asp-for="Email" class="form-control" type="email" required /></div>
+        <div class="mb-3"><label asp-for="IdentificationNumber" class="form-label fw-semibold"></label><input asp-for="IdentificationNumber" class="form-control" inputmode="numeric" required /></div>
+        <div class="mb-3"><label asp-for="NewPassword" class="form-label fw-semibold"></label><input asp-for="NewPassword" class="form-control" autocomplete="new-password" required /><partial name="_PasswordRules" model="@("NewPassword")" /></div>
+        <div class="mb-3"><label asp-for="ConfirmPassword" class="form-label fw-semibold"></label><input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" required /></div>
+        <button class="btn btn-primary" type="submit">Change password</button>
+        <a asp-action="Login" class="btn btn-link">Back</a>
+    </form></div></div></div>

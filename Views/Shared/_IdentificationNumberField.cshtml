@@ -1,0 +1,35 @@
+﻿@model RegisterViewModel
+<label asp-for="IdentificationNumber" id="idNumberLabel" class="form-label fw-semibold"></label>
+<input asp-for="IdentificationNumber" id="IdentificationNumber" class="form-control" inputmode="numeric" autocomplete="off" />
+<div class="form-text" id="idNumberHelp">Select how you are registering first.</div>
+<script>
+    (function () {
+        var type = document.getElementById('PersonType');
+        var input = document.getElementById('IdentificationNumber');
+        var label = document.getElementById('idNumberLabel');
+        var help = document.getElementById('idNumberHelp');
+        if (!type || !input) return;
+
+        function apply() {
+            var len = type.value === 'Student' ? @RegisterViewModel.StudentNumberLength
+                    : (type.value === 'Staff' || type.value === 'FinancialOfficer') ? @RegisterViewModel.StaffNumberLength : 0;
+            if (len) {
+                label.textContent = type.value === 'Student' ? 'Student number' : 'Staff number';
+                input.maxLength = len;
+                input.pattern = '[0-9]{' + len + '}';
+                input.title = 'Exactly ' + len + ' digits';
+                input.placeholder = len === 10 ? 'e.g. 2025123456' : 'e.g. 12345678';
+                help.textContent = 'Exactly ' + len + ' digits, numbers only.';
+            } else {
+                label.textContent = 'Student number / Staff number';
+                input.removeAttribute('pattern');
+                input.removeAttribute('maxLength');
+                input.placeholder = '';
+                help.textContent = 'Select how you are registering first.';
+            }
+        }
+        input.addEventListener('input', function () { input.value = input.value.replace(/\D/g, ''); });
+        type.addEventListener('change', apply);
+        apply();
+    })();
+</script>

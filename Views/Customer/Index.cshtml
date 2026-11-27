@@ -1,0 +1,83 @@
+@model CustomerDashboardViewModel
+@{ ViewData["Title"] = "My Dashboard"; var hasRoom = Model.Allocations.Any(); }
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center mb-3">
+    <div><h2 class="mb-0">Welcome, @Model.Customer.UserName</h2><div class="text-secondary">@Model.Customer.PersonType &middot; @Model.Customer.IdentificationNumber</div></div>
+    <div class="d-flex flex-wrap gap-2">
+        @if (hasRoom && !Model.IsSuspended)
+        {
+            <a asp-controller="Maintenance" asp-action="Index" class="btn btn-warning btn-lg"><i class="fa-solid fa-screwdriver-wrench me-1"></i>Maintenance
+                @if (Model.OpenMaintenance > 0) { <span class="badge text-bg-dark ms-1">@Model.OpenMaintenance open</span> }</a>
+        }
+        @if (hasRoom && !Model.IsSuspended) { <a asp-controller="Payment" asp-action="Pay" class="btn btn-primary btn-lg"><i class="fa-solid fa-credit-card me-1"></i>Pay now</a> }
+        <a asp-controller="Application" asp-action="Create" class="btn btn-outline-primary btn-lg">Apply for accommodation</a>
+    </div>
+</div>
+@if (Model.IsSuspended)
+{
+    <div class="alert alert-danger">Your account is <strong>suspended</strong>@(string.IsNullOrEmpty(Model.Account.SuspensionReason) ? "" : ": " + Model.Account.SuspensionReason).
+        @if (Model.HasPendingAppeal) { <span>Your appeal is awaiting review.</span> } else { <a asp-action="Appeal">Submit an appeal</a> }</div>
+}
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="pay-card account-card">
+            <span class="chip"></span><span class="brand gold">UFS</span>
+            <div class="pan">@Model.Account.AccountNumber</div>
+            <div class="d-flex justify-content-between align-items-end">
+                <div><div class="tiny">Account holder</div><div class="fw-semibold">@Model.Customer.FullName.ToUpper()</div><div class="small opacity-75">@Model.Customer.IdentificationNumber</div></div>
+                <div class="text-end"><div class="tiny">Outstanding</div><div class="fs-5 gold">&#82;@Model.Outstanding.ToString("N2")</div></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="row g-3">
+            <div class="col-sm-6 col-xl-3"><div class="card stat-tile shadow-sm p-3"><div class="lbl">Outstanding</div><div class="num">&#82;@Model.Outstanding.ToString("N2")</div>@if (Model.PendingAmount > 0) { <div class="small text-secondary">&#82;@Model.PendingAmount.ToString("N2") pending acceptance</div> }</div></div>
+            <div class="col-sm-6 col-xl-3"><div class="card stat-tile shadow-sm p-3"><div class="lbl">Electricity units</div><div class="num">@Model.Account.ElectricityUnits.ToString("N2")</div><a asp-controller="Payment" asp-action="Electricity" class="small">Buy units</a></div></div>
+            <div class="col-sm-6 col-xl-3"><div class="card stat-tile shadow-sm p-3"><div class="lbl">Rooms</div><div class="num">@Model.Allocations.Count</div></div></div>
+            <div class="col-sm-6 col-xl-3"><div class="card stat-tile shadow-sm p-3"><div class="lbl">Account</div><div class="num fs-5">@Model.Account.AccountStatus</div></div></div>
+        </div>
+        <div class="card dashboard-card p-3 mt-3">
+            <h6 class="mb-2">Contact &amp; profile</h6>
+            <div class="small">@Model.Customer.UserEmail &middot; @Model.Customer.PhoneNumber &middot; vehicles: @Model.Customer.NumberOfVehicles <a asp-action="Profile" class="ms-2">Edit profile</a></div>
+        </div>
+    </div>
+</div>
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card dashboard-card p-3 h-100">
+            <h5>My accommodation</h5>
+            @if (!hasRoom) { <p class="text-secondary mb-0">You have not been allocated a room yet. <a asp-controller="Accommodation" asp-action="Index">Browse accommodation</a> and apply.</p> }
+            @foreach (var a in Model.Allocations)
+            {
+                <div class="border rounded-3 p-2 mb-2">
+                    <strong>@a.Room.Accommodation.AccommodationName - Room @a.Room.RoomNumber</strong>
+                    <div class="small text-secondary">@a.Room.RoomType &middot; moved in @a.MoveInDate.ToString("d MMM yyyy")</div>
+                </div>
+            }
+            <h6 class="mt-3">Applications</h6>
+            @if (!Model.Applications.Any()) { <p class="small text-secondary">No applications yet.</p> }
+            @foreach (var ap in Model.Applications)
+            {
+                <div class="d-flex justify-content-between small py-1 border-bottom"><span>@ap.Reference - @string.Join(", ", ap.Rooms.Select(r => r.Room.RoomNumber))</span>
+                    <span class="badge @(ap.Status == "Approved" ? "badge-soft-success" : ap.Status == "Rejected" ? "badge-soft-danger" : "badge-soft-warning")">@ap.Status</span></div>
+            }
+            <a asp-controller="Application" asp-action="Index" class="small mt-2">All applications</a>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card dashboard-card p-3 h-100">
+            <div class="d-flex justify-content-between"><h5>Outstanding charges</h5><a asp-controller="Payment" asp-action="History" class="small">Payment history</a></div>
+            @if (!Model.OpenCharges.Any()) { <p class="text-secondary small">Nothing outstanding. Charges for a new room are billed at the end of your move-in month.</p> }
+            @foreach (var c in Model.OpenCharges)
+            {
+                <div class="d-flex justify-content-between small py-1 border-bottom"><span>@c.Description<div class="text-secondary">Due @c.DueDate.ToString("d MMM yyyy")</div></span>
+                    <span class="fw-semibold @(c.DueDate.Date < DateTime.Today ? "text-danger" : "")">&#82;@c.Balance.ToString("N2")</span></div>
+            }
+            <h6 class="mt-3">Recent payments</h6>
+            @foreach (var p in Model.RecentPayments)
+            {
+                <div class="d-flex justify-content-between small py-1 border-bottom"><a asp-controller="Payment" asp-action="Receipt" asp-route-id="@p.PaymentId">@p.DateOfPay.ToLocalTime().ToString("d MMM yyyy") - @p.PaymentPurpose</a>
+                    <span>&#82;@p.Amount.ToString("N2") <span class="badge @(p.PaymentStatus == "Successful" ? "badge-soft-success" : p.PaymentStatus == "Pending" ? "badge-soft-warning" : "badge-soft-danger")">@p.PaymentStatus</span></span></div>
+            }
+        </div>
+    </div>
+</div>

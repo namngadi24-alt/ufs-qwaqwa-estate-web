@@ -1,0 +1,51 @@
+@model List<Payment>
+@{
+    ViewData["Title"] = "Payments";
+    var isCustomer = User.IsInRole("Customer");
+    string? status = ViewBag.Status as string; string? purpose = ViewBag.Purpose as string;
+}
+<div class="d-flex justify-content-between align-items-center mb-3"><h2 class="mb-0">@(isCustomer ? "My payment history" : "Payments & transactions")</h2>
+    @if (isCustomer) { <a asp-action="Pay" class="btn btn-primary">Make a payment</a> }</div>
+@if (isCustomer)
+{
+    var open = (List<Charge>)ViewBag.OpenCharges;
+    <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="card stat-tile shadow-sm p-3"><div class="lbl">Outstanding balance</div><div class="num">&#82;@(((decimal)ViewBag.Outstanding).ToString("N2"))</div>@if ((decimal)ViewBag.PendingAmount > 0) { <div class="small text-secondary">&#82;@(((decimal)ViewBag.PendingAmount).ToString("N2")) pending acceptance</div> }</div></div>
+        <div class="col-md-3"><div class="card stat-tile shadow-sm p-3"><div class="lbl">Electricity units</div><div class="num">@(((decimal)ViewBag.ElectricityUnits).ToString("N2"))</div></div></div>
+        <div class="col-md-6"><div class="card dashboard-card p-3 h-100"><h6>Outstanding charges</h6>
+            @if (!open.Any()) { <div class="small text-secondary">Nothing outstanding.</div> }
+            @foreach (var c in open) { <div class="d-flex justify-content-between small"><span>@c.Description</span><span class="@(c.DueDate.Date < DateTime.Today ? "text-danger" : "")">&#82;@c.Balance.ToString("N2") (due @c.DueDate.ToString("d MMM"))</span></div> }</div></div>
+    </div>
+}
+<form method="get" class="row g-2 mb-3 align-items-end">
+    <div class="col-md-3"><select name="status" class="form-select"><option value="">All statuses</option>
+        <option value="Pending" selected="@(status == "Pending")">Pending</option><option value="Successful" selected="@(status == "Successful")">Successful</option><option value="Failed" selected="@(status == "Failed")">Failed</option></select></div>
+    <div class="col-md-4"><select name="purpose" class="form-select"><option value="">All types</option>
+        <option value="@PaymentPurposes.Bills" selected="@(purpose == PaymentPurposes.Bills)">@PaymentPurposes.Bills</option>
+        <option value="@PaymentPurposes.Electricity" selected="@(purpose == PaymentPurposes.Electricity)">@PaymentPurposes.Electricity</option></select></div>
+    <div class="col-md-2"><button class="btn btn-outline-primary w-100"><i class="fa-solid fa-filter"></i> Filter</button></div>
+</form>
+@if (Model.Count == 0) { <div class="empty-state p-5 text-center">No payments found.</div> }
+else
+{
+<div class="table-responsive table-shell"><table class="table align-middle mb-0">
+    <thead><tr><th>Date</th>@if (!isCustomer) { <th>Customer</th> }<th>Type</th><th>Allocated to</th><th>Card</th><th class="text-end">Amount</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var p in Model)
+    {
+        <tr><td>@p.DateOfPay.ToLocalTime().ToString("d MMM yyyy HH:mm")</td>
+            @if (!isCustomer) { <td>@p.account.user.FullName<div class="small text-secondary">@p.account.user.IdentificationNumber</div></td> }
+            <td>@p.PaymentPurpose</td>
+            <td class="small">@(p.Allocations.Any() ? string.Join("; ", p.Allocations.Select(a => a.Charge.ChargeType + " " + a.Charge.BillingPeriod.ToString("MMM yy"))) : (p.PaymentStatus == "Failed" ? p.FailureReason : "Electricity units"))</td>
+            <td class="small">@p.CardBrand ...@p.CardLast4</td>
+            <td class="text-end">&#82;@p.Amount.ToString("N2")</td>
+            <td><span class="badge @(p.PaymentStatus == "Successful" ? "badge-soft-success" : p.PaymentStatus == "Pending" ? "badge-soft-warning" : "badge-soft-danger")">@p.PaymentStatus</span></td>
+            <td class="text-nowrap"><a asp-action="Receipt" asp-route-id="@p.PaymentId" class="btn btn-sm btn-outline-secondary">View details</a>
+                @if (!isCustomer && p.PaymentStatus == "Pending")
+                {
+                    <form asp-action="Accept" asp-route-id="@p.PaymentId" method="post" class="d-inline"><button class="btn btn-sm btn-success"><i class="fa-solid fa-check"></i> Accept</button></form>
+                    <form asp-action="Reject" asp-route-id="@p.PaymentId" method="post" class="d-inline-flex gap-1 mt-1"><input name="note" class="form-control form-control-sm" style="width:150px" placeholder="Reason to reject" maxlength="300" required minlength="5" /><button class="btn btn-sm btn-danger"><i class="fa-solid fa-xmark"></i> Reject</button></form>
+                }</td></tr>
+    }
+    </tbody></table></div>
+}

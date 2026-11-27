@@ -1,0 +1,19 @@
+@model List<PasswordResetRequest>
+@{ ViewData["Title"] = "Password reset requests"; string current = ViewBag.Status; }
+<h2 class="mb-1">Financial officer password reset requests</h2>
+<p class="text-secondary">The officer's identity was checked against their stored email, staff number and phone number. Approve to let them set a new password within 24 hours.</p>
+<div class="btn-group mb-3">@foreach (var s in new[] { "Pending", "Approved", "Completed", "Rejected", "Expired", "All" }) { <a asp-action="ResetRequests" asp-route-status="@s" class="btn btn-sm @(current == s ? "btn-primary" : "btn-outline-primary")">@s</a> }</div>
+@if (Model.Count == 0) { <div class="empty-state p-5 text-center">No requests in this view.</div> }
+@foreach (var r in Model)
+{
+    <div class="card dashboard-card p-3 mb-3"><div class="d-flex justify-content-between"><div><strong>@r.user.FullName</strong> <span class="small text-secondary">@r.user.IdentificationNumber &middot; requested @r.DateRequested.ToLocalTime().ToString("d MMM yyyy HH:mm")</span></div><span class="badge badge-soft-secondary">@r.Status</span></div>
+        <div class="small mt-1"><strong>Reason:</strong> @r.Reason</div>
+        @if (r.Status == "Pending")
+        {
+            <form asp-action="DecideReset" asp-route-id="@r.PasswordResetRequestId" method="post" class="row g-2 mt-2 align-items-end">
+                <div class="col-md-7"><input name="note" class="form-control form-control-sm" placeholder="Note (required when rejecting)" maxlength="300" /></div>
+                <div class="col-md-5 d-flex gap-2"><button name="decision" value="approve" class="btn btn-sm btn-success"><i class="fa-solid fa-check"></i> Approve</button><button name="decision" value="reject" class="btn btn-sm btn-danger"><i class="fa-solid fa-xmark"></i> Reject</button></div></form>
+        }
+        else { <div class="small text-secondary mt-1">Reviewed by @r.ReviewedBy @r.DateReviewed?.ToLocalTime().ToString("d MMM yyyy HH:mm") @(string.IsNullOrEmpty(r.AdminNote) ? "" : "- " + r.AdminNote) @(r.DateCompleted != null ? "· completed " + r.DateCompleted?.ToLocalTime().ToString("d MMM yyyy HH:mm") : "")</div> }
+    </div>
+}

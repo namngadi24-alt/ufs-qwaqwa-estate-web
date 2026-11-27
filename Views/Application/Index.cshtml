@@ -1,0 +1,20 @@
+@model List<AccommodationApplication>
+@{ ViewData["Title"] = "My applications"; }
+<div class="d-flex justify-content-between align-items-center mb-3"><h2>My accommodation applications</h2><a asp-action="Create" class="btn btn-primary">New application</a></div>
+@if (Model.Count == 0) { <div class="empty-state p-5 text-center">You have not applied yet. <a asp-controller="Accommodation" asp-action="Index">Browse accommodation</a>.</div> }
+@foreach (var a in Model)
+{
+    <div class="card dashboard-card p-3 mb-3">
+        <div class="d-flex justify-content-between flex-wrap">
+            <div><strong>@a.Reference</strong> <span class="text-secondary small">submitted @a.DateSubmitted.ToLocalTime().ToString("d MMM yyyy")</span></div>
+            <span class="badge @(a.Status == "Approved" ? "badge-soft-success" : a.Status == "Rejected" ? "badge-soft-danger" : "badge-soft-warning")">@a.Status</span>
+        </div>
+        <div class="small mt-2">Rooms: @string.Join("; ", a.Rooms.Select(r => r.Room.Label)) &middot; Move-in: @a.PlannedMoveInDate.ToString("d MMM yyyy") &middot; Vehicles: @a.NumberOfVehicles</div>
+        @if (!string.IsNullOrWhiteSpace(a.DecisionNote)) { <div class="small mt-1"><strong>Decision note:</strong> @a.DecisionNote <span class="text-secondary">(@a.DecidedBy)</span></div> }
+        @if (a.Status == "Pending")
+        {
+            <form asp-action="Cancel" asp-route-id="@a.AccommodationApplicationId" method="post" class="mt-2" onsubmit="return confirm('Withdraw this application?');">
+                <button class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-rotate-left"></i> Withdraw application</button></form>
+        }
+    </div>
+}

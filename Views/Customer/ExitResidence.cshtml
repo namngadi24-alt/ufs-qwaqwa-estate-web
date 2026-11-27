@@ -1,0 +1,51 @@
+@using UFSWebApp.Models
+@{
+    ViewData["Title"] = "Leave residence";
+    var allocations = (List<RoomAllocation>)ViewBag.ActiveAllocations;
+    var requests = (List<ResidenceExitRequest>)ViewBag.Requests;
+}
+<h2 class="mb-3">Leave residence</h2>
+<p class="text-secondary">Submit an exit request for your current room. An administrator or financial officer must approve it before your allocation ends.</p>
+@if (!allocations.Any())
+{
+    <div class="alert alert-info">You do not currently have an active room allocation.</div>
+}
+@foreach (var allocation in allocations)
+{
+    var pending = requests.Any(r => r.RoomAllocationId == allocation.RoomAllocationId && r.Status == ResidenceExitRequestStatuses.Pending);
+    <div class="card dashboard-card p-3 mb-3">
+        <h5>@allocation.Room.Accommodation.AccommodationName - Room @allocation.Room.RoomNumber</h5>
+        <div class="small text-secondary mb-3">@allocation.Room.RoomType · moved in @allocation.MoveInDate.ToString("d MMM yyyy")</div>
+        @if (pending)
+        {
+            <div class="alert alert-warning mb-0">Your exit request for this room is waiting for staff review.</div>
+        }
+        else
+        {
+            <form asp-action="RequestExit" method="post">
+                <input type="hidden" name="roomAllocationId" value="@allocation.RoomAllocationId" />
+                <label class="form-label" for="reason-@allocation.RoomAllocationId">Reason for leaving</label>
+                <textarea class="form-control mb-2" id="reason-@allocation.RoomAllocationId" name="reason" rows="3" minlength="10" maxlength="2000" required></textarea>
+                <button class="btn btn-outline-danger" type="submit" onclick="return confirm('Submit an exit request for this room? The allocation will end only after staff approval.');">Request to leave</button>
+            </form>
+        }
+    </div>
+}
+<h4 class="mt-4">My exit request history</h4>
+@if (!requests.Any())
+{
+    <p class="text-secondary">You have not submitted any exit requests.</p>
+}
+else
+{
+    <div class="table-responsive"><table class="table align-middle">
+        <thead><tr><th>Residence / room</th><th>Submitted</th><th>Reason</th><th>Status</th><th>Decision</th></tr></thead>
+        <tbody>@foreach (var request in requests)
+        {
+            <tr><td>@request.RoomAllocation.Room.Accommodation.AccommodationName · @request.RoomAllocation.Room.RoomNumber</td>
+                <td>@request.DateSubmitted.ToLocalTime().ToString("d MMM yyyy")</td><td>@request.Reason</td>
+                <td><span class="badge @(request.Status == ResidenceExitRequestStatuses.Approved ? "badge-soft-success" : request.Status == ResidenceExitRequestStatuses.Rejected ? "badge-soft-danger" : "badge-soft-warning")">@request.Status</span></td>
+                <td class="small">@(request.DecisionNote ?? (request.DecidedBy == null ? "Awaiting review" : "Reviewed by " + request.DecidedBy))</td></tr>
+        }</tbody>
+    </table></div>
+}

@@ -1,0 +1,24 @@
+@model List<User>
+@{ ViewData["Title"] = "Customers"; }
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3"><h2 class="mb-0">Customers</h2><a asp-action="Create" class="btn btn-primary"><i class="fa-solid fa-user-plus me-1"></i>Add customer</a></div>
+<form method="get" class="row g-2 mb-3"><div class="col-md-5"><input name="search" value="@ViewBag.Search" class="form-control" placeholder="Search name, number or email" /></div><div class="col-auto"><button class="btn btn-outline-primary"><i class="fa-solid fa-magnifying-glass"></i> Search</button></div></form>
+@if (Model.Count == 0) { <div class="empty-state p-5 text-center">No customers found.</div> }
+else {
+<div class="table-responsive table-shell"><table class="table align-middle mb-0">
+    <thead><tr><th>Customer</th><th>Contact</th><th>Accommodation</th><th>Status</th><th class="text-end">Actions</th></tr></thead><tbody>
+    @foreach (var u in Model)
+    {
+        var acc = u.accounts.FirstOrDefault(); var suspended = AccountStatuses.IsSuspended(acc?.AccountStatus);
+        <tr><td><strong>@u.FullName</strong> @if (u.IsDemo) { <span class="badge text-bg-warning">DEMO</span> }<div class="small text-secondary">@u.PersonType @u.IdentificationNumber</div></td>
+            <td class="small">@u.UserEmail<div>@u.PhoneNumber</div></td>
+            <td class="small">@(u.Allocations.Any(a => a.IsActive) ? string.Join("; ", u.Allocations.Where(a => a.IsActive).Select(a => a.Room.Accommodation.AccommodationName + " " + a.Room.RoomNumber)) : "none")</td>
+            <td><span class="badge @(suspended ? "badge-soft-danger" : "badge-soft-success")">@(acc?.AccountStatus ?? "-")</span></td>
+            <td class="text-end text-nowrap">
+                <a asp-action="Details" asp-route-id="@u.UserId" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-eye"></i> View details</a>
+                <a asp-action="Edit" asp-route-id="@u.UserId" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen"></i> Edit</a>
+                <a asp-action="ResetPassword" asp-route-id="@u.UserId" class="btn btn-sm btn-outline-warning"><i class="fa-solid fa-key"></i> Reset password</a>
+                @if (suspended) { <a asp-controller="Suspensions" asp-action="Reactivate" asp-route-id="@u.UserId" class="btn btn-sm btn-outline-success"><i class="fa-solid fa-user-check"></i> Reinstate</a> }
+                else { <a asp-controller="Suspensions" asp-action="Suspend" asp-route-id="@u.UserId" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-user-slash"></i> Suspend</a> }
+                <form asp-action="Delete" asp-route-id="@u.UserId" method="post" class="d-inline" onsubmit="return confirm('Delete this customer and all of their records?');"><button class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i> Delete</button></form>
+            </td></tr>
+    }</tbody></table></div> }

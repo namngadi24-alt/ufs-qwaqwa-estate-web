@@ -1,0 +1,24 @@
+@model List<AccommodationApplication>
+@{ ViewData["Title"] = "Applications"; string current = ViewBag.Status; var rooms = (Dictionary<int, RoomInfo>)ViewBag.Rooms; }
+<h2 class="mb-3">Accommodation applications</h2>
+<div class="btn-group mb-3">@foreach (var s in new[] { "Pending", "Approved", "Rejected", "All" }) { <a asp-action="Applications" asp-route-status="@s" class="btn btn-sm @(current == s ? "btn-primary" : "btn-outline-primary")">@s</a> }</div>
+@if (Model.Count == 0) { <div class="empty-state p-5 text-center">No applications in this view.</div> }
+@foreach (var a in Model)
+{
+    <div class="card dashboard-card p-3 mb-3">
+        <div class="d-flex justify-content-between flex-wrap"><div><strong>@a.Reference</strong> - @a.user.FullName <span class="text-secondary small">(@a.user.PersonType @a.user.IdentificationNumber &middot; @a.user.PhoneNumber &middot; @a.user.UserEmail)</span></div>
+            <span class="badge @(a.Status == "Approved" ? "badge-soft-success" : a.Status == "Rejected" ? "badge-soft-danger" : "badge-soft-warning")">@a.Status</span></div>
+        <div class="small mt-2">Submitted @a.DateSubmitted.ToLocalTime().ToString("d MMM yyyy") &middot; preferred type: @(a.PreferredRoomType ?? "none") &middot; vehicles: @a.NumberOfVehicles &middot; move-in: @a.PlannedMoveInDate.ToString("d MMM yyyy")</div>
+        <ul class="small mb-1 mt-1">@foreach (var r in a.Rooms) { var info = rooms.GetValueOrDefault(r.RoomId); <li>@r.Room.Label (@r.Room.RoomType) - @(info?.Status ?? "")@(info?.Rent != null ? ", R" + info.Rent.Value.ToString("N2") + "/month" : "")</li> }</ul>
+        @if (!string.IsNullOrEmpty(a.Notes)) { <div class="small"><strong>Notes:</strong> @a.Notes</div> }
+        @if (a.Status == "Pending")
+        {
+            <form asp-action="DecideApplication" asp-route-id="@a.AccommodationApplicationId" method="post" class="row g-2 mt-2 align-items-end">
+                <div class="col-md-7"><label class="form-label small mb-0">Note (required when rejecting)</label><input name="note" class="form-control form-control-sm" maxlength="300" /></div>
+                <div class="col-md-5 d-flex gap-2"><button name="decision" value="approve" class="btn btn-sm btn-success"><i class="fa-solid fa-check"></i> Approve</button>
+                    <button name="decision" value="reject" class="btn btn-sm btn-danger" onclick="return this.form.note.value.trim().length >= 5 || (alert('Please enter a reason of at least 5 characters.'), false);">Reject</button></div>
+            </form>
+        }
+        else { <div class="small mt-1 text-secondary">Decided by @a.DecidedBy on @a.DateDecided?.ToLocalTime().ToString("d MMM yyyy")@(string.IsNullOrEmpty(a.DecisionNote) ? "" : " - " + a.DecisionNote)</div> }
+    </div>
+}

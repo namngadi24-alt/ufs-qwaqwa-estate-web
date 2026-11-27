@@ -1,0 +1,14 @@
+@model List<User>
+@{ ViewData["Title"] = "Financial officers"; }
+<div class="d-flex justify-content-between align-items-center mb-3"><h2 class="mb-0">Financial officers</h2><a asp-action="CreateFinancialOfficer" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Add financial officer</a></div>
+<div class="table-responsive table-shell"><table class="table align-middle mb-0"><thead><tr><th>Officer</th><th>Contact</th><th>Status</th><th class="text-end">Actions</th></tr></thead><tbody>
+@foreach (var u in Model)
+{
+    <tr><td><strong>@u.FullName</strong> @if (u.IsDemo) { <span class="badge text-bg-warning">DEMO</span> }<div class="small text-secondary">@u.IdentificationNumber</div></td><td class="small">@u.UserEmail<div>@u.PhoneNumber</div></td>
+        <td><span class="badge @(u.IsAuthorised ? "badge-soft-success" : "badge-soft-warning")">@(u.IsAuthorised ? "Authorised" : "Awaiting authorisation")</span>@if (u.IsLockedOut) { <span class="badge badge-soft-danger">Locked</span> }</td>
+        <td class="text-end text-nowrap">
+            <a asp-action="EditFinancialOfficer" asp-route-id="@u.UserId" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen"></i> Edit</a>
+            <form asp-action="ToggleOfficerAuthorisation" asp-route-id="@u.UserId" method="post" class="d-inline"><button class="btn btn-sm @(u.IsAuthorised ? "btn-outline-danger" : "btn-success")">@(u.IsAuthorised ? "Revoke" : "Authorise")</button></form>
+            <form asp-action="DeleteOfficer" asp-route-id="@u.UserId" method="post" class="d-inline" onsubmit="return confirm('Delete this officer?');"><button class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i> Delete</button></form></td></tr>
+}</tbody></table></div>
+@if (Model.Count == 0) { <div class="empty-state p-4 text-center">No financial officers.</div> }

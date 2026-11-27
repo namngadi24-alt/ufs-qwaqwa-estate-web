@@ -1,0 +1,79 @@
+@model Report
+@{ ViewData["Title"] = Model.ReportTitle; }
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h2><i class="fa-regular fa-file-lines text-danger me-2"></i>@Model.ReportTitle</h2>
+        <p class="text-muted mb-0">
+            <i class="fa-solid fa-circle-user me-1"></i>@Model.user?.UserName @Model.user?.UserSurname
+            &middot; <span class="badge bg-@(Model.Status=="Submitted"?"success":"secondary")">@Model.Status</span>
+            @if (Model.Status == "Submitted" && Model.DateSubmitted.HasValue)
+            {
+                <span>&middot; Submitted @Model.DateSubmitted.Value.ToString("dd MMM yyyy HH:mm")</span>
+            }
+            else
+            {
+                <span>&middot; Created @Model.DateGenerated.ToString("dd MMM yyyy HH:mm")</span>
+            }
+        </p>
+    </div>
+    <div>
+        @if (Model.Status == "Draft" && Model.userId.ToString() == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.ReportId" class="btn btn-outline-secondary"><i class="fa-solid fa-pen me-1"></i>Edit</a>
+        }
+        <a asp-action="Index" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i>Back</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card text-bg-success shadow-sm"><div class="card-body">
+            <h6><i class="fa-solid fa-sack-dollar me-1"></i>Total Collected</h6><h4>&#82;@(Model.TotalCollected.ToString("N2"))</h4>
+        </div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-bg-warning shadow-sm"><div class="card-body">
+            <h6><i class="fa-solid fa-hourglass-half me-1"></i>Total Pending</h6><h4>&#82;@(Model.TotalPending.ToString("N2"))</h4>
+        </div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-bg-dark shadow-sm"><div class="card-body">
+            <h6><i class="fa-solid fa-receipt me-1"></i>Payments Recorded</h6><h4>@Model.PaymentCount</h4>
+        </div></div>
+    </div>
+</div>
+
+<div class="card mb-3 shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title"><i class="fa-solid fa-magnifying-glass-chart text-danger me-2"></i>Findings</h5>
+        <p class="card-text" style="white-space: pre-wrap;">@Model.Findings</p>
+    </div>
+</div>
+
+<div class="card mb-3 shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title"><i class="fa-solid fa-lightbulb text-danger me-2"></i>Advice</h5>
+        <p class="card-text" style="white-space: pre-wrap;">@Model.Advice</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.Comments))
+{
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title"><i class="fa-solid fa-comment text-danger me-2"></i>Comments</h5>
+            <p class="card-text" style="white-space: pre-wrap;">@Model.Comments</p>
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.ReportDescription))
+{
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title"><i class="fa-solid fa-circle-info text-danger me-2"></i>Additional Notes / Inputs</h5>
+            <p class="card-text" style="white-space: pre-wrap;">@Model.ReportDescription</p>
+        </div>
+    </div>
+}

@@ -1,0 +1,14 @@
+@model Accommodation
+@{ ViewData["Title"] = Model.AccommodationId == 0 ? "Add accommodation" : "Edit accommodation"; }
+<div class="row justify-content-center"><div class="col-lg-8"><div class="card dashboard-card p-4"><h2>@ViewData["Title"]</h2>
+    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+    <form asp-action="Save" method="post" novalidate id="aForm"><input type="hidden" asp-for="AccommodationId" />
+        <div class="row g-3">
+            <div class="col-md-6"><label asp-for="AccommodationName" class="form-label fw-semibold"></label><input asp-for="AccommodationName" class="form-control" maxlength="100" required /></div>
+            <div class="col-md-6"><label asp-for="AccommodationType" class="form-label fw-semibold"></label><select asp-for="AccommodationType" class="form-select">@foreach (var t in AccommodationTypes.All) { <option value="@t">@t</option> }</select></div>
+            <div class="col-12"><label asp-for="AccommodationLocation" class="form-label fw-semibold"></label><input asp-for="AccommodationLocation" class="form-control" maxlength="150" required /></div>
+            <div class="col-12"><label asp-for="Description" class="form-label fw-semibold"></label><textarea asp-for="Description" class="form-control" rows="4" maxlength="2000" required></textarea></div>
+            <div class="col-12"><label asp-for="Rules" class="form-label fw-semibold"></label><textarea asp-for="Rules" class="form-control" rows="4" maxlength="2000"></textarea></div>
+            <div class="col-12"><div class="form-check"><input asp-for="IsPublished" class="form-check-input" /><label asp-for="IsPublished" class="form-check-label"></label></div></div></div>
+        <button class="btn btn-primary mt-3" type="submit">Save</button><a asp-action="Index" class="btn btn-link mt-3">Cancel</a></form></div></div></div>
+@section Scripts { <script>document.getElementById('aForm').addEventListener('submit', function (e) { if (!this.checkValidity()) { e.preventDefault(); this.reportValidity(); } });</script> }

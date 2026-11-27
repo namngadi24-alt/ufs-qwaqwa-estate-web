@@ -1,0 +1,20 @@
+@model MaintenanceFormViewModel
+@{ ViewData["Title"] = "Report a problem"; }
+<div class="row justify-content-center"><div class="col-lg-7"><div class="card dashboard-card p-4">
+    <h2>Report a maintenance problem</h2>
+    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+    <form asp-action="Create" method="post" enctype="multipart/form-data" novalidate id="mForm">
+        <div class="mb-3"><label asp-for="RoomId" class="form-label fw-semibold"></label>
+            <select asp-for="RoomId" class="form-select" required><option value="">Select your room...</option>
+            @foreach (var r in Model.MyRooms) { <option value="@r.RoomId">@r.Label (@r.RoomType)</option> }</select></div>
+        <div class="mb-3"><label asp-for="Category" class="form-label fw-semibold"></label>
+            <select asp-for="Category" class="form-select" required><option value="">Select type of problem...</option>
+            @foreach (var c in MaintenanceCategories.All) { <option value="@c">@c</option> }</select></div>
+        <div class="mb-3"><label asp-for="Description" class="form-label fw-semibold"></label><textarea asp-for="Description" class="form-control" rows="4" minlength="10" maxlength="1500" required></textarea></div>
+        <div class="mb-3"><label asp-for="Photo" class="form-label fw-semibold"></label><input asp-for="Photo" type="file" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
+            <div class="form-text">JPG, PNG or WEBP, up to 5 MB.</div></div>
+        <button class="btn btn-warning" type="submit"><i class="fa-solid fa-paper-plane"></i> Submit request</button><a asp-action="Index" class="btn btn-link">Cancel</a>
+    </form></div></div></div>
+@section Scripts {
+<script>document.getElementById('mForm').addEventListener('submit', function (e) { if (!this.checkValidity()) { e.preventDefault(); this.reportValidity(); } });</script>
+}
